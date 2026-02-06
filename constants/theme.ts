@@ -22,6 +22,21 @@ export const SRSColors = {
   mature: '#166534',   // Dark green - well-known cards
 } as const;
 
+// Zinc color scale for consistent grays
+const Zinc = {
+  50: '#fafafa',
+  100: '#f4f4f5',
+  200: '#e4e4e7',
+  300: '#d4d4d8',
+  400: '#a1a1aa',
+  500: '#71717a',
+  600: '#52525b',
+  700: '#3f3f46',
+  800: '#27272a',
+  900: '#18181b',
+  950: '#09090b',
+} as const;
+
 export const Colors = {
   light: {
     // Backgrounds
@@ -33,6 +48,8 @@ export const Colors = {
     text: '#0a0a0a',
     textSecondary: '#475569',
     textMuted: '#64748b',
+    textDimmed: '#94a3b8',
+    textFaint: '#cbd5e1',
 
     // Accent
     tint: accent,
@@ -62,14 +79,16 @@ export const Colors = {
   },
   dark: {
     // Backgrounds
-    background: '#0a0a0a',
-    surface: '#141414',
-    surfaceElevated: '#18181b',
+    background: '#000000',       // Pure black
+    surface: '#000000',          // Pure black (was #141414)
+    surfaceElevated: Zinc[900],  // #18181b
 
-    // Text
-    text: '#ffffff',
-    textSecondary: '#a1a1aa',
-    textMuted: '#71717a',
+    // Text - Zinc scale hierarchy
+    text: '#ffffff',             // Pure white for primary text
+    textSecondary: Zinc[200],    // #e4e4e7 - deck titles, important text
+    textMuted: Zinc[500],        // #71717a - labels, less important
+    textDimmed: Zinc[600],       // #52525b - inactive numbers
+    textFaint: Zinc[700],        // #3f3f46 - very dim text
 
     // Accent
     tint: accent,
@@ -77,19 +96,19 @@ export const Colors = {
     accentMuted: '#10b981',
 
     // UI Elements
-    icon: '#a1a1aa',
-    iconMuted: '#52525b',
-    tabIconDefault: '#71717a',
+    icon: Zinc[400],             // #a1a1aa
+    iconMuted: Zinc[500],        // #71717a
+    tabIconDefault: Zinc[500],   // #71717a
     tabIconSelected: accent,
 
     // Borders & Dividers
-    border: '#27272a',
-    borderMuted: '#1f1f23',
+    border: Zinc[800],           // #27272a
+    borderMuted: Zinc[900],      // #18181b - progress track
 
     // Card backgrounds
-    card: '#141414',
-    cardFront: '#18181b',
-    cardBack: '#1f1f23',
+    card: Zinc[900],             // #18181b
+    cardFront: Zinc[900],        // #18181b
+    cardBack: Zinc[800],         // #27272a
 
     // Status
     success: '#22c55e',
