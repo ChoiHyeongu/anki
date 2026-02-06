@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Flashcard } from '@/components/flashcard';
 import { RatingButtons, RevealButton, StudyHeader } from '@/components/study';
 import type { Rating } from '@/components/study/RatingButtons';
-import { Colors } from '@/constants/theme';
+import { BorderRadius, Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { mockCards } from '@/lib/mock-data';
 
@@ -74,22 +74,28 @@ export default function StudyScreen() {
       <Flashcard
         front={currentCard.front}
         back={currentCard.back}
+        stats={currentCard.stats}
         isRevealed={isRevealed}
         onReveal={handleReveal}
       />
 
       {isRevealed ? (
-        <RatingButtons
-          onRate={handleRate}
-          intervals={{
-            again: '1분',
-            hard: '6분',
-            good: '10분',
-            easy: '4일',
-          }}
-        />
+        <>
+          <RatingButtons
+            onRate={handleRate}
+            intervals={{
+              again: '1m',
+              hard: '2d',
+              good: '4d',
+              easy: '7d',
+            }}
+          />
+          <View
+            style={[styles.homeIndicator, { backgroundColor: colors.border }]}
+          />
+        </>
       ) : (
-        <RevealButton onPress={handleReveal} />
+        <RevealButton />
       )}
     </View>
   );
@@ -98,5 +104,13 @@ export default function StudyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  homeIndicator: {
+    width: 128,
+    height: 6,
+    borderRadius: BorderRadius.full,
+    alignSelf: 'center',
+    marginBottom: 8,
+    opacity: 0.5,
   },
 });

@@ -7,15 +7,16 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
-import { BorderRadius, FontFamily, Spacing } from '@/constants/theme';
+import { BorderRadius, Colors, FontFamily, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import type { Rating, RatingButtonsProps } from './RatingButtons.type';
 
 const RATING_CONFIG: Record<Rating, { label: string; color: string }> = {
-  again: { label: '다시', color: '#dc2626' },
-  hard: { label: '어려움', color: '#f59e0b' },
-  good: { label: '알맞음', color: '#22c55e' },
-  easy: { label: '쉬움', color: '#3b82f6' },
+  again: { label: '다시', color: '#ff5252' },
+  hard: { label: '어려움', color: '#ffa726' },
+  good: { label: '알맞음', color: '#13ec5b' },
+  easy: { label: '쉬움', color: '#42a5f5' },
 };
 
 const RATINGS: Rating[] = ['again', 'hard', 'good', 'easy'];
@@ -35,19 +36,25 @@ function RatingButton({
   onPress,
   disabled,
 }: RatingButtonProps) {
+  const colorScheme = useColorScheme() ?? 'dark';
+  const colors = Colors[colorScheme];
   const config = RATING_CONFIG[rating];
   const scale = useSharedValue(1);
+  const isPressed = useSharedValue(false);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
+    backgroundColor: isPressed.value ? `${config.color}33` : colors.surface,
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.9, { damping: 15, stiffness: 400 });
+    scale.value = withSpring(0.95, { damping: 15, stiffness: 400 });
+    isPressed.value = true;
   };
 
   const handlePressOut = () => {
     scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+    isPressed.value = false;
   };
 
   const handlePress = () => {
@@ -58,23 +65,28 @@ function RatingButton({
   };
 
   return (
-    <AnimatedPressable
-      onPress={handlePress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      disabled={disabled}
-      style={[
-        styles.button,
-        animatedStyle,
-        {
-          backgroundColor: config.color,
-          opacity: disabled ? 0.5 : 1,
-        },
-      ]}
-    >
-      <ThemedText style={styles.label}>{config.label}</ThemedText>
-      {interval && <ThemedText style={styles.interval}>{interval}</ThemedText>}
-    </AnimatedPressable>
+    <View style={styles.buttonWrapper}>
+      {interval && (
+        <ThemedText style={[styles.interval, { color: colors.textMuted }]}>
+          {interval}
+        </ThemedText>
+      )}
+      <AnimatedPressable
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        style={[
+          styles.button,
+          animatedStyle,
+          { opacity: disabled ? 0.5 : 1 },
+        ]}
+      >
+        <ThemedText style={[styles.label, { color: config.color }]}>
+          {config.label}
+        </ThemedText>
+      </AnimatedPressable>
+    </View>
   );
 }
 
@@ -102,25 +114,28 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: 48,
+  },
+  buttonWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  interval: {
+    fontSize: 10,
+    fontFamily: FontFamily.regular,
+    marginBottom: 4,
   },
   button: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: BorderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
-    fontSize: 14,
-    fontFamily: FontFamily.semiBold,
-    color: '#ffffff',
-  },
-  interval: {
     fontSize: 12,
-    fontFamily: FontFamily.regular,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 2,
+    fontFamily: FontFamily.bold,
   },
 });

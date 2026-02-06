@@ -1,53 +1,103 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BorderRadius, Colors, FontFamily, Spacing } from '@/constants/theme';
+import { Colors, FontFamily, FontSize, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import type { FlashcardBackProps } from './FlashcardBack.type';
 
 export function FlashcardBack({
   definition,
-  example,
+  examples,
   synonyms,
+  highlightWord,
 }: FlashcardBackProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
+  const renderHighlightedExample = (text: string, index: number) => {
+    if (!highlightWord) {
+      return (
+        <ThemedText style={[styles.exampleText, { color: colors.textMuted }]}>
+          &ldquo;{text}&rdquo;
+        </ThemedText>
+      );
+    }
+
+    const regex = new RegExp(`(${highlightWord})`, 'gi');
+    const parts = text.split(regex);
+
+    return (
+      <Text style={[styles.exampleText, { color: colors.textMuted }]}>
+        &ldquo;
+        {parts.map((part, i) =>
+          regex.test(part) ? (
+            <Text key={i} style={[styles.highlightedWord, { color: colors.text }]}>
+              {part}
+            </Text>
+          ) : (
+            <Text key={i}>{part}</Text>
+          )
+        )}
+        &rdquo;
+      </Text>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.definition}>{definition}</ThemedText>
+      {/* Meaning Section */}
+      <View style={styles.section}>
+        <ThemedText style={[styles.sectionLabel, { color: colors.textMuted }]}>
+          Meaning
+        </ThemedText>
+        <ThemedText style={[styles.definition, { color: colors.textSecondary }]}>
+          {definition}
+        </ThemedText>
+      </View>
 
-      {example && (
-        <View
-          style={[styles.exampleContainer, { backgroundColor: colors.cardBack }]}
-        >
-          <ThemedText style={[styles.exampleLabel, { color: colors.textMuted }]}>
-            예문
+      {/* Examples Section */}
+      {examples && examples.length > 0 && (
+        <View style={styles.section}>
+          <ThemedText style={[styles.sectionLabel, { color: colors.textMuted }]}>
+            Examples
           </ThemedText>
-          <ThemedText style={[styles.example, { color: colors.textSecondary }]}>
-            &ldquo;{example}&rdquo;
-          </ThemedText>
+          <View style={styles.examplesList}>
+            {examples.map((example, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.exampleItem,
+                  {
+                    borderLeftColor:
+                      index === 0
+                        ? `${colors.accent}4D` // 30% opacity
+                        : colors.border,
+                  },
+                ]}
+              >
+                {renderHighlightedExample(example, index)}
+              </View>
+            ))}
+          </View>
         </View>
       )}
 
+      {/* Synonyms Section */}
       {synonyms && synonyms.length > 0 && (
-        <View style={styles.synonymsContainer}>
-          <ThemedText style={[styles.synonymsLabel, { color: colors.textMuted }]}>
-            유의어
+        <View style={styles.section}>
+          <ThemedText style={[styles.sectionLabel, { color: colors.textMuted }]}>
+            Synonyms
           </ThemedText>
-          <View style={styles.synonymsList}>
+          <View style={styles.synonymsRow}>
             {synonyms.map((synonym, index) => (
-              <View
+              <ThemedText
                 key={index}
-                style={[styles.synonymTag, { backgroundColor: colors.border }]}
+                style={[styles.synonymText, { color: colors.textMuted }]}
               >
-                <ThemedText
-                  style={[styles.synonymText, { color: colors.textSecondary }]}
-                >
-                  {synonym}
-                </ThemedText>
-              </View>
+                {synonym}
+                {index < synonyms.length - 1 ? ',' : ''}
+              </ThemedText>
             ))}
           </View>
         </View>
@@ -59,51 +109,46 @@ export function FlashcardBack({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-    gap: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    gap: Spacing.xl,
+  },
+  section: {
+    gap: 4,
+  },
+  sectionLabel: {
+    fontSize: 10,
+    fontFamily: FontFamily.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
   },
   definition: {
-    fontSize: 24,
-    fontFamily: FontFamily.semiBold,
-    textAlign: 'center',
-  },
-  exampleContainer: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    width: '100%',
-  },
-  exampleLabel: {
-    fontSize: 12,
+    fontSize: FontSize.xl,
     fontFamily: FontFamily.medium,
-    marginBottom: Spacing.xs,
   },
-  example: {
-    fontSize: 16,
+  examplesList: {
+    gap: 12,
+    marginTop: 8,
+  },
+  exampleItem: {
+    borderLeftWidth: 2,
+    paddingLeft: 12,
+  },
+  exampleText: {
+    fontSize: 15,
     fontFamily: FontFamily.regular,
-    fontStyle: 'italic',
+    lineHeight: 22,
   },
-  synonymsContainer: {
-    width: '100%',
-  },
-  synonymsLabel: {
-    fontSize: 12,
+  highlightedWord: {
     fontFamily: FontFamily.medium,
-    marginBottom: Spacing.sm,
   },
-  synonymsList: {
+  synonymsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  synonymTag: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.sm,
+    gap: 4,
+    marginTop: 8,
   },
   synonymText: {
-    fontSize: 14,
-    fontFamily: FontFamily.regular,
+    fontSize: FontSize.sm,
+    fontFamily: FontFamily.medium,
   },
 });

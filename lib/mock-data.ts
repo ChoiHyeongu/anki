@@ -52,7 +52,18 @@ export const mockDecks: Deck[] = [
   },
 ];
 
-export const mockCards: MockCard[] = [
+export interface MockCardStats {
+  reviews: number;
+  interval: string;
+  ease: number;
+  type: 'new' | 'learning' | 'review';
+}
+
+export interface MockCardWithStats extends MockCard {
+  stats: MockCardStats;
+}
+
+export const mockCards: MockCardWithStats[] = [
   {
     id: '1',
     front: {
@@ -61,8 +72,17 @@ export const mockCards: MockCard[] = [
     },
     back: {
       definition: '회복력 있는, 탄력 있는',
-      example: 'She is remarkably resilient in the face of adversity.',
-      synonyms: ['tough', 'strong', 'hardy'],
+      examples: [
+        'She is a resilient person who overcomes any obstacle.',
+        'The local economy is remarkably resilient.',
+      ],
+      synonyms: ['flexible', 'strong', 'tough', 'buoyant'],
+    },
+    stats: {
+      reviews: 14,
+      interval: '4 days',
+      ease: 250,
+      type: 'review',
     },
   },
   {
@@ -73,8 +93,17 @@ export const mockCards: MockCard[] = [
     },
     back: {
       definition: '어디에나 있는, 편재하는',
-      example: 'Smartphones have become ubiquitous in modern society.',
+      examples: [
+        'Smartphones have become ubiquitous in modern society.',
+        'Coffee shops are ubiquitous in the city center.',
+      ],
       synonyms: ['omnipresent', 'everywhere', 'universal'],
+    },
+    stats: {
+      reviews: 8,
+      interval: '2 days',
+      ease: 230,
+      type: 'learning',
     },
   },
   {
@@ -85,8 +114,17 @@ export const mockCards: MockCard[] = [
     },
     back: {
       definition: '일시적인, 순간적인',
-      example: 'The ephemeral beauty of cherry blossoms.',
+      examples: [
+        'The ephemeral beauty of cherry blossoms.',
+        'Fame can be ephemeral in the entertainment industry.',
+      ],
       synonyms: ['fleeting', 'transient', 'momentary'],
+    },
+    stats: {
+      reviews: 0,
+      interval: '1 min',
+      ease: 250,
+      type: 'new',
     },
   },
   {
@@ -97,8 +135,17 @@ export const mockCards: MockCard[] = [
     },
     back: {
       definition: '실용적인, 현실적인',
-      example: 'We need a pragmatic approach to solve this problem.',
+      examples: [
+        'We need a pragmatic approach to solve this problem.',
+        'She is known for her pragmatic decision-making style.',
+      ],
       synonyms: ['practical', 'realistic', 'sensible'],
+    },
+    stats: {
+      reviews: 21,
+      interval: '7 days',
+      ease: 280,
+      type: 'review',
     },
   },
   {
@@ -109,8 +156,17 @@ export const mockCards: MockCard[] = [
     },
     back: {
       definition: '웅변의, 유창한',
-      example: 'She gave an eloquent speech that moved the audience.',
+      examples: [
+        'She gave an eloquent speech that moved the audience.',
+        'His eloquent writing style captivated readers worldwide.',
+      ],
       synonyms: ['articulate', 'fluent', 'expressive'],
+    },
+    stats: {
+      reviews: 5,
+      interval: '1 day',
+      ease: 220,
+      type: 'learning',
     },
   },
 ];

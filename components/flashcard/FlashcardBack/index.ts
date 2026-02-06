@@ -1,2 +1,2 @@
 export { FlashcardBack } from './FlashcardBack';
-export type { FlashcardBackProps } from './FlashcardBack.type';
+export type { FlashcardBackProps, CardStatsProps } from './FlashcardBack.type';
