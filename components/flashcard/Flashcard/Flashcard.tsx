@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -65,7 +65,11 @@ export function Flashcard({
       {/* Answer Section - Only when revealed */}
       <Animated.View style={[styles.answerSection, backAnimatedStyle]}>
         {isRevealed && (
-          <>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
             <FlashcardBack
               definition={back.definition}
               examples={back.examples}
@@ -80,7 +84,7 @@ export function Flashcard({
                 type={stats.type}
               />
             )}
-          </>
+          </ScrollView>
         )}
       </Animated.View>
 
@@ -109,6 +113,7 @@ const styles = StyleSheet.create({
   },
   word: {
     fontSize: 36,
+    lineHeight: 44,
     fontFamily: FontFamily.bold,
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -127,6 +132,12 @@ const styles = StyleSheet.create({
   },
   answerSection: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   divider: {
     height: 1,
