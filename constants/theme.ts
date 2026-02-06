@@ -1,53 +1,176 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Anki Flashcard App Color Schema
+ * Based on Stitch Design: https://stitch.withgoogle.com/projects/17984646321015771690
+ *
+ * Design Theme:
+ * - Mode: Dark (primary)
+ * - Accent: #13ec5b (bright green)
+ * - Font: Lexend
+ * - Border Radius: 8px
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Primary accent color from Stitch design
+const accent = '#13ec5b';
+
+// SRS Status Colors (for card states)
+export const SRSColors = {
+  new: '#475569',      // Slate - cards never studied
+  learning: '#a16207', // Amber - cards being learned
+  review: '#15803d',   // Green - cards due for review
+  mature: '#166534',   // Dark green - well-known cards
+} as const;
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    // Backgrounds
+    background: '#f6f8f6',
+    surface: '#ffffff',
+    surfaceElevated: '#ffffff',
+
+    // Text
+    text: '#0a0a0a',
+    textSecondary: '#475569',
+    textMuted: '#64748b',
+
+    // Accent
+    tint: accent,
+    accent: accent,
+    accentMuted: '#10b981',
+
+    // UI Elements
+    icon: '#475569',
+    iconMuted: '#94a3b8',
+    tabIconDefault: '#64748b',
+    tabIconSelected: accent,
+
+    // Borders & Dividers
+    border: '#e2e8f0',
+    borderMuted: '#f1f5f9',
+
+    // Card backgrounds
+    card: '#ffffff',
+    cardFront: '#ffffff',
+    cardBack: '#f8fafc',
+
+    // Status
+    success: '#15803d',
+    warning: '#a16207',
+    error: '#dc2626',
+    info: '#0284c7',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+    // Backgrounds
+    background: '#0a0a0a',
+    surface: '#141414',
+    surfaceElevated: '#18181b',
 
+    // Text
+    text: '#ffffff',
+    textSecondary: '#a1a1aa',
+    textMuted: '#71717a',
+
+    // Accent
+    tint: accent,
+    accent: accent,
+    accentMuted: '#10b981',
+
+    // UI Elements
+    icon: '#a1a1aa',
+    iconMuted: '#52525b',
+    tabIconDefault: '#71717a',
+    tabIconSelected: accent,
+
+    // Borders & Dividers
+    border: '#27272a',
+    borderMuted: '#1f1f23',
+
+    // Card backgrounds
+    card: '#141414',
+    cardFront: '#18181b',
+    cardBack: '#1f1f23',
+
+    // Status
+    success: '#22c55e',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#38bdf8',
+  },
+} as const;
+
+// Design tokens from Stitch
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+} as const;
+
+export const BorderRadius = {
+  sm: 4,
+  md: 8,   // Default from Stitch (ROUND_EIGHT)
+  lg: 12,
+  xl: 16,
+  full: 9999,
+} as const;
+
+// Font family from Stitch design: Lexend
+// Note: Lexend needs to be loaded via expo-font or @expo-google-fonts/lexend
+export const FontFamily = {
+  // Use Lexend when loaded, fallback to system fonts
+  regular: 'Lexend_400Regular',
+  medium: 'Lexend_500Medium',
+  semiBold: 'Lexend_600SemiBold',
+  bold: 'Lexend_700Bold',
+} as const;
+
+export const FontSize = {
+  xs: 12,
+  sm: 14,
+  base: 16,
+  lg: 18,
+  xl: 20,
+  '2xl': 24,
+  '3xl': 30,
+  '4xl': 36,
+} as const;
+
+export const FontWeight = {
+  regular: '400',
+  medium: '500',
+  semiBold: '600',
+  bold: '700',
+} as const;
+
+// Legacy Fonts export for compatibility
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
+    sans: 'Lexend_400Regular',
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {
-    sans: 'normal',
+    sans: 'Lexend_400Regular',
     serif: 'serif',
     rounded: 'normal',
     mono: 'monospace',
   },
   web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    sans: "Lexend, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
     rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+// Type exports for type-safe color/token access
+export type ColorKey = keyof typeof Colors.light;
+export type SRSColorKey = keyof typeof SRSColors;
+export type SpacingKey = keyof typeof Spacing;
+export type BorderRadiusKey = keyof typeof BorderRadius;
+export type FontSizeKey = keyof typeof FontSize;
+export type FontWeightKey = keyof typeof FontWeight;
