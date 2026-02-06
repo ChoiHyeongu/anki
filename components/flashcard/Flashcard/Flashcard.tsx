@@ -5,7 +5,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { BorderRadius, Colors, Spacing } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import { FlashcardBack } from '../FlashcardBack';
@@ -51,7 +51,7 @@ export function Flashcard({
   return (
     <Pressable
       onPress={onReveal}
-      style={[styles.container, { backgroundColor: colors.cardFront }]}
+      style={styles.container}
     >
       <View style={styles.cardContent}>
         <Animated.View style={frontAnimatedStyle}>
@@ -70,6 +70,11 @@ export function Flashcard({
           />
         </Animated.View>
       </View>
+
+      {/* Subtle divider line */}
+      {!isRevealed && (
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      )}
     </Pressable>
   );
 }
@@ -77,12 +82,15 @@ export function Flashcard({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    borderRadius: BorderRadius.lg,
-    margin: Spacing.md,
-    overflow: 'hidden',
+    paddingHorizontal: Spacing.lg,
   },
   cardContent: {
     flex: 1,
     position: 'relative',
+  },
+  divider: {
+    height: 1,
+    opacity: 0.1,
+    marginHorizontal: 0,
   },
 });

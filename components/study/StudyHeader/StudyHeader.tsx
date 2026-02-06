@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconButton } from '@/components/ui/IconButton';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { Colors, FontFamily, Spacing } from '@/constants/theme';
+import { Colors, FontFamily, FontSize, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import type { StudyHeaderProps } from './StudyHeader.type';
@@ -25,21 +25,34 @@ export function StudyHeader({
     <View style={styles.container}>
       <View style={styles.topRow}>
         <IconButton
-          icon={<Ionicons name="close" size={24} color={colors.icon} />}
+          icon={<Ionicons name="close" size={20} color={colors.textMuted} />}
           onPress={onClose}
           accessibilityLabel="학습 종료"
         />
 
-        <ThemedText style={styles.counter}>
-          {current} / {total}
-        </ThemedText>
+        <View style={styles.progressSection}>
+          <ThemedText style={[styles.label, { color: colors.textMuted }]}>
+            Session Progress
+          </ThemedText>
+          <View style={styles.progressRow}>
+            <ThemedText style={[styles.currentCount, { color: colors.accent }]}>
+              {current}
+            </ThemedText>
+            <View style={styles.progressBarWrapper}>
+              <ProgressBar progress={progress} height={4} />
+            </View>
+            <ThemedText style={[styles.totalCount, { color: colors.textMuted }]}>
+              {total}
+            </ThemedText>
+          </View>
+        </View>
 
         <IconButton
           icon={
             <Ionicons
               name="arrow-undo"
-              size={24}
-              color={canUndo ? colors.icon : colors.iconMuted}
+              size={20}
+              color={canUndo ? colors.textMuted : colors.iconMuted}
             />
           }
           onPress={onUndo}
@@ -47,26 +60,45 @@ export function StudyHeader({
           accessibilityLabel="이전 카드로 돌아가기"
         />
       </View>
-
-      <ProgressBar progress={progress} height={4} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.sm,
-    paddingBottom: Spacing.md,
-    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.sm,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  counter: {
-    fontSize: 16,
+  progressSection: {
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: 10,
+    fontFamily: FontFamily.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  currentCount: {
+    fontSize: FontSize.xs,
+    fontFamily: FontFamily.medium,
+  },
+  progressBarWrapper: {
+    width: 96,
+  },
+  totalCount: {
+    fontSize: FontSize.xs,
     fontFamily: FontFamily.medium,
   },
 });

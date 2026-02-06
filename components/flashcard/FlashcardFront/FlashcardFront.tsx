@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { IconButton } from '@/components/ui/IconButton';
-import { Colors, FontFamily, Spacing } from '@/constants/theme';
+import { BorderRadius, Colors, FontFamily, FontSize, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import type { FlashcardFrontProps } from './FlashcardFront.type';
@@ -18,24 +17,23 @@ export function FlashcardFront({
 
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.word}>{word}</ThemedText>
+      <View style={styles.wordRow}>
+        <ThemedText style={styles.word}>{word}</ThemedText>
+        {onAudioPress && (
+          <Pressable
+            onPress={onAudioPress}
+            style={[styles.audioButton, { backgroundColor: colors.surface }]}
+            accessibilityLabel="발음 듣기"
+          >
+            <Ionicons name="volume-medium" size={18} color={colors.textMuted} />
+          </Pressable>
+        )}
+      </View>
 
       {phonetic && (
-        <View style={styles.phoneticRow}>
-          <ThemedText style={[styles.phonetic, { color: colors.textMuted }]}>
-            {phonetic}
-          </ThemedText>
-          {onAudioPress && (
-            <IconButton
-              icon={
-                <Ionicons name="volume-medium" size={24} color={colors.accent} />
-              }
-              onPress={onAudioPress}
-              size={36}
-              accessibilityLabel="발음 듣기"
-            />
-          )}
-        </View>
+        <ThemedText style={[styles.phonetic, { color: colors.textMuted }]}>
+          {phonetic}
+        </ThemedText>
       )}
     </View>
   );
@@ -46,21 +44,30 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: Spacing.lg,
+    paddingVertical: 96,
+    paddingHorizontal: Spacing.lg,
+  },
+  wordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   word: {
     fontSize: 36,
     fontFamily: FontFamily.bold,
     textAlign: 'center',
-    marginBottom: Spacing.md,
+    letterSpacing: -0.5,
   },
-  phoneticRow: {
-    flexDirection: 'row',
+  audioButton: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.full,
     alignItems: 'center',
-    gap: Spacing.sm,
+    justifyContent: 'center',
   },
   phonetic: {
-    fontSize: 18,
+    fontSize: FontSize.sm,
     fontFamily: FontFamily.regular,
+    marginTop: Spacing.sm,
   },
 });
