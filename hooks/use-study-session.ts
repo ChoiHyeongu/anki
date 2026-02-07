@@ -1,0 +1,327 @@
+/**
+ * useStudySession Hook
+ * Manages study session state including card queue, ratings, and undo functionality
+ */
+import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
+import {
+  getStudyQueue,
+  submitRating as dbSubmitRating,
+  undoRating as dbUndoRating,
+  canUndoRating,
+} from '@/lib/db';
+import { getIntervalPreviews } from '@/lib/srs';
+import { adaptCardToUI, mapUIRatingToSRS, adaptIntervalPreviewToUI } from '@/lib/adapters';
+import type { AdaptedCard } from '@/lib/adapters';
+import type { Rating as UIRating } from '@/components/study/RatingButtons/RatingButtons.type';
+import type { IntervalPreview } from '@/lib/srs';
+
+// ============================================
+// Types
+// ============================================
+
+interface SessionStats {
+  totalReviewed: number;
+  newCardsLearned: number;
+  learningCards: number;
+  reviewCards: number;
+}
+
+interface StudySessionState {
+  cards: AdaptedCard[];
+  currentIndex: number;
+  isLoading: boolean;
+  error: Error | null;
+  canUndo: boolean;
+  lastReviewedCardId: string | null;
+  sessionStats: SessionStats;
+  intervalPreviews: Record<UIRating, string> | null;
+}
+
+type StudySessionAction =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; cards: AdaptedCard[] }
+  | { type: 'LOAD_ERROR'; error: Error }
+  | { type: 'RATE_CARD'; cardId: string; wasNew: boolean; wasLearning: boolean; wasReview: boolean }
+  | { type: 'UNDO_SUCCESS' }
+  | { type: 'SET_PREVIEWS'; previews: Record<UIRating, string> | null }
+  | { type: 'SET_CAN_UNDO'; canUndo: boolean };
+
+interface UseStudySessionReturn {
+  isLoading: boolean;
+  error: Error | null;
+  currentCard: AdaptedCard | null;
+  currentIndex: number;
+  totalCards: number;
+  isComplete: boolean;
+  canUndo: boolean;
+  intervalPreviews: Record<UIRating, string> | null;
+  sessionStats: SessionStats;
+  submitRating: (rating: UIRating) => Promise<void>;
+  undoRating: () => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+// ============================================
+// Reducer
+// ============================================
+
+const initialState: StudySessionState = {
+  cards: [],
+  currentIndex: 0,
+  isLoading: true,
+  error: null,
+  canUndo: false,
+  lastReviewedCardId: null,
+  sessionStats: {
+    totalReviewed: 0,
+    newCardsLearned: 0,
+    learningCards: 0,
+    reviewCards: 0,
+  },
+  intervalPreviews: null,
+};
+
+function reducer(
+  state: StudySessionState,
+  action: StudySessionAction
+): StudySessionState {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, isLoading: true, error: null };
+
+    case 'LOAD_SUCCESS':
+      return {
+        ...state,
+        cards: action.cards,
+        currentIndex: 0,
+        isLoading: false,
+        error: null,
+        canUndo: false,
+        lastReviewedCardId: null,
+        sessionStats: {
+          totalReviewed: 0,
+          newCardsLearned: 0,
+          learningCards: 0,
+          reviewCards: 0,
+        },
+      };
+
+    case 'LOAD_ERROR':
+      return {
+        ...state,
+        isLoading: false,
+        error: action.error,
+      };
+
+    case 'RATE_CARD':
+      return {
+        ...state,
+        currentIndex: state.currentIndex + 1,
+        canUndo: true,
+        lastReviewedCardId: action.cardId,
+        sessionStats: {
+          totalReviewed: state.sessionStats.totalReviewed + 1,
+          newCardsLearned:
+            state.sessionStats.newCardsLearned + (action.wasNew ? 1 : 0),
+          learningCards:
+            state.sessionStats.learningCards + (action.wasLearning ? 1 : 0),
+          reviewCards:
+            state.sessionStats.reviewCards + (action.wasReview ? 1 : 0),
+        },
+        intervalPreviews: null, // Reset until new card loads
+      };
+
+    case 'UNDO_SUCCESS':
+      return {
+        ...state,
+        currentIndex: Math.max(0, state.currentIndex - 1),
+        canUndo: false,
+        lastReviewedCardId: null,
+        sessionStats: {
+          ...state.sessionStats,
+          totalReviewed: Math.max(0, state.sessionStats.totalReviewed - 1),
+        },
+      };
+
+    case 'SET_PREVIEWS':
+      return {
+        ...state,
+        intervalPreviews: action.previews,
+      };
+
+    case 'SET_CAN_UNDO':
+      return {
+        ...state,
+        canUndo: action.canUndo,
+      };
+
+    default:
+      return state;
+  }
+}
+
+// ============================================
+// Hook
+// ============================================
+
+/**
+ * Hook to manage study session state
+ *
+ * @param deckId - The deck to study
+ *
+ * @example
+ * ```tsx
+ * function StudyScreen() {
+ *   const { deckId } = useLocalSearchParams<{ deckId: string }>();
+ *   const {
+ *     currentCard,
+ *     currentIndex,
+ *     totalCards,
+ *     isComplete,
+ *     intervalPreviews,
+ *     submitRating,
+ *     undoRating,
+ *   } = useStudySession(deckId!);
+ *
+ *   if (isComplete) {
+ *     return <SummaryScreen stats={sessionStats} />;
+ *   }
+ *
+ *   return (
+ *     <Flashcard card={currentCard} />
+ *     <RatingButtons onRate={submitRating} intervals={intervalPreviews} />
+ *   );
+ * }
+ * ```
+ */
+export function useStudySession(deckId: string): UseStudySessionReturn {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  // Use ref to track latest state for callbacks (stale closure prevention)
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Derived values
+  const currentCard =
+    state.currentIndex < state.cards.length
+      ? state.cards[state.currentIndex]
+      : null;
+  const isComplete = !state.isLoading && state.currentIndex >= state.cards.length;
+
+  // Load study queue
+  const loadQueue = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
+
+    try {
+      const queue = await getStudyQueue(deckId);
+      const adaptedCards = queue.cards.map(adaptCardToUI);
+      dispatch({ type: 'LOAD_SUCCESS', cards: adaptedCards });
+    } catch (error) {
+      console.error('[useStudySession] Failed to load queue:', error);
+      dispatch({
+        type: 'LOAD_ERROR',
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
+    }
+  }, [deckId]);
+
+  // Update interval previews when current card changes
+  useEffect(() => {
+    if (currentCard) {
+      const previews = getIntervalPreviews(currentCard.state);
+      dispatch({
+        type: 'SET_PREVIEWS',
+        previews: adaptIntervalPreviewToUI(previews),
+      });
+    }
+  }, [currentCard?.id]);
+
+  // Submit rating
+  const submitRating = useCallback(async (rating: UIRating) => {
+    const card = stateRef.current.cards[stateRef.current.currentIndex];
+    if (!card) return;
+
+    const srsRating = mapUIRatingToSRS(rating);
+    const wasNew = card.state.status === 'new';
+    const wasLearning =
+      card.state.status === 'learning' || card.state.status === 'relearning';
+    const wasReview = card.state.status === 'review';
+
+    try {
+      await dbSubmitRating(card.id, srsRating);
+      dispatch({
+        type: 'RATE_CARD',
+        cardId: card.id,
+        wasNew,
+        wasLearning,
+        wasReview,
+      });
+    } catch (error) {
+      console.error('[useStudySession] Failed to submit rating:', error);
+      // Don't throw - allow UI to remain interactive
+    }
+  }, []);
+
+  // Undo rating
+  const undoRating = useCallback(async () => {
+    const { canUndo, lastReviewedCardId } = stateRef.current;
+    if (!canUndo || !lastReviewedCardId) return;
+
+    try {
+      const undone = await dbUndoRating(lastReviewedCardId);
+      if (undone) {
+        dispatch({ type: 'UNDO_SUCCESS' });
+      }
+    } catch (error) {
+      console.error('[useStudySession] Failed to undo:', error);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      dispatch({ type: 'LOAD_START' });
+
+      try {
+        const queue = await getStudyQueue(deckId);
+        if (mounted) {
+          const adaptedCards = queue.cards.map(adaptCardToUI);
+          dispatch({ type: 'LOAD_SUCCESS', cards: adaptedCards });
+        }
+      } catch (error) {
+        if (mounted) {
+          console.error('[useStudySession] Failed to load queue:', error);
+          dispatch({
+            type: 'LOAD_ERROR',
+            error: error instanceof Error ? error : new Error(String(error)),
+          });
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, [deckId]);
+
+  return {
+    isLoading: state.isLoading,
+    error: state.error,
+    currentCard,
+    currentIndex: state.currentIndex,
+    totalCards: state.cards.length,
+    isComplete,
+    canUndo: state.canUndo,
+    intervalPreviews: state.intervalPreviews,
+    sessionStats: state.sessionStats,
+    submitRating,
+    undoRating,
+    refresh: loadQueue,
+  };
+}
