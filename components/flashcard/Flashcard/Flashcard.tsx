@@ -27,7 +27,12 @@ export function Flashcard({ front, back, stats, isRevealed, onReveal }: Flashcar
   return (
     <Pressable onPress={onReveal} style={styles.container}>
       {/* Word Section - Always visible */}
-      <View style={[styles.wordSection, isRevealed && { borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
+      <View
+        style={[
+          styles.wordSection,
+          isRevealed && { borderBottomColor: colors.border, borderBottomWidth: 1, paddingHorizontal: Spacing.sm },
+        ]}
+      >
         <View style={styles.wordRow}>
           <ThemedText style={styles.word}>{front.word}</ThemedText>
           {front.onAudioPress && (

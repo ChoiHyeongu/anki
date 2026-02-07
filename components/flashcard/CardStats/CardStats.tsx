@@ -63,6 +63,8 @@ const styles = StyleSheet.create({
   },
   statContent: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   label: {
     fontSize: 9,

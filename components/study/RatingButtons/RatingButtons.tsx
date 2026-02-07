@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: Spacing.sm,
   },
   buttonWrapper: {
     flex: 1,
