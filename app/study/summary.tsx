@@ -1,11 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -63,20 +59,12 @@ export default function SummaryScreen() {
 
         <View style={styles.statsSection}>
           <View style={styles.statRow}>
-            <ThemedText style={[styles.statLabel, { color: colors.textMuted }]}>
-              복습 카드:
-            </ThemedText>
-            <ThemedText style={[styles.statValue, { color: colors.accent }]}>
-              {reviewCards}
-            </ThemedText>
+            <ThemedText style={[styles.statLabel, { color: colors.textMuted }]}>복습 카드:</ThemedText>
+            <ThemedText style={[styles.statValue, { color: colors.accent }]}>{reviewCards}</ThemedText>
           </View>
           <View style={styles.statRow}>
-            <ThemedText style={[styles.statLabel, { color: colors.textMuted }]}>
-              신규 카드:
-            </ThemedText>
-            <ThemedText style={[styles.statValue, { color: colors.accent }]}>
-              {newCards}
-            </ThemedText>
+            <ThemedText style={[styles.statLabel, { color: colors.textMuted }]}>신규 카드:</ThemedText>
+            <ThemedText style={[styles.statValue, { color: colors.accent }]}>{newCards}</ThemedText>
           </View>
         </View>
       </View>
@@ -91,10 +79,6 @@ export default function SummaryScreen() {
         >
           <ThemedText style={styles.buttonText}>홈으로 이동</ThemedText>
         </AnimatedPressable>
-
-        <View style={styles.homeIndicatorContainer}>
-          <View style={[styles.homeIndicator, { backgroundColor: colors.border }]} />
-        </View>
       </View>
     </View>
   );
@@ -154,15 +138,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: FontFamily.bold,
     color: '#0a0a0a',
-  },
-  homeIndicatorContainer: {
-    marginTop: 32,
-    alignItems: 'center',
-  },
-  homeIndicator: {
-    width: 128,
-    height: 6,
-    borderRadius: BorderRadius.full,
-    opacity: 0.1,
   },
 });

@@ -26,9 +26,7 @@ export function DeckList({ decks, onDeckPress }: DeckListProps) {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <ThemedText style={[styles.emptyText, { color: colors.textMuted }]}>
-        덱이 없습니다
-      </ThemedText>
+      <ThemedText style={[styles.emptyText, { color: colors.textMuted }]}>덱이 없습니다</ThemedText>
     </View>
   );
 
@@ -50,6 +48,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     paddingBottom: Spacing.xxl * 2,
     flexGrow: 1,
+    rowGap: Spacing.md,
   },
   emptyContainer: {
     flex: 1,
