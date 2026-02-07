@@ -9,13 +9,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import type { StudyHeaderProps } from './StudyHeader.type';
 
-export function StudyHeader({
-  current,
-  total,
-  onClose,
-  onUndo,
-  canUndo,
-}: StudyHeaderProps) {
+export function StudyHeader({ current, total, onClose, onUndo, canUndo }: StudyHeaderProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -25,39 +19,27 @@ export function StudyHeader({
     <View style={styles.container}>
       <View style={styles.topRow}>
         <IconButton
-          icon={<Ionicons name="close" size={20} color={colors.textMuted} />}
+          icon={<Ionicons name='close' size={20} color={colors.textMuted} />}
           onPress={onClose}
-          accessibilityLabel="학습 종료"
+          accessibilityLabel='학습 종료'
         />
 
         <View style={styles.progressSection}>
-          <ThemedText style={[styles.label, { color: colors.textMuted }]}>
-            Session Progress
-          </ThemedText>
+          <ThemedText style={[styles.label, { color: colors.textMuted }]}>Session Progress</ThemedText>
           <View style={styles.progressRow}>
-            <ThemedText style={[styles.currentCount, { color: colors.accent }]}>
-              {current}
-            </ThemedText>
+            <ThemedText style={[styles.currentCount, { color: colors.accent }]}>{current}</ThemedText>
             <View style={styles.progressBarWrapper}>
               <ProgressBar progress={progress} height={4} />
             </View>
-            <ThemedText style={[styles.totalCount, { color: colors.textMuted }]}>
-              {total}
-            </ThemedText>
+            <ThemedText style={[styles.totalCount, { color: colors.textMuted }]}>{total}</ThemedText>
           </View>
         </View>
 
         <IconButton
-          icon={
-            <Ionicons
-              name="arrow-undo"
-              size={20}
-              color={canUndo ? colors.textMuted : colors.iconMuted}
-            />
-          }
+          icon={<Ionicons name='arrow-undo' size={20} color={canUndo ? colors.textMuted : colors.iconMuted} />}
           onPress={onUndo}
           disabled={!canUndo}
-          accessibilityLabel="이전 카드로 돌아가기"
+          accessibilityLabel='이전 카드로 돌아가기'
         />
       </View>
     </View>
@@ -66,8 +48,7 @@ export function StudyHeader({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.lg,
+    paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
   },
   topRow: {

@@ -1,10 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
 import { BorderRadius, Colors, FontFamily, FontSize, Spacing } from '@/constants/theme';
@@ -17,13 +13,7 @@ import type { FlashcardProps } from './Flashcard.type';
 
 const ANIMATION_DURATION = 200;
 
-export function Flashcard({
-  front,
-  back,
-  stats,
-  isRevealed,
-  onReveal,
-}: FlashcardProps) {
+export function Flashcard({ front, back, stats, isRevealed, onReveal }: FlashcardProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -37,28 +27,21 @@ export function Flashcard({
   return (
     <Pressable onPress={onReveal} style={styles.container}>
       {/* Word Section - Always visible */}
-      <View
-        style={[
-          styles.wordSection,
-          isRevealed && { borderBottomColor: colors.border, borderBottomWidth: 1 },
-        ]}
-      >
+      <View style={[styles.wordSection, isRevealed && { borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
         <View style={styles.wordRow}>
           <ThemedText style={styles.word}>{front.word}</ThemedText>
           {front.onAudioPress && (
             <Pressable
               onPress={front.onAudioPress}
               style={[styles.audioButton, { backgroundColor: colors.surface }]}
-              accessibilityLabel="발음 듣기"
+              accessibilityLabel='발음 듣기'
             >
-              <Ionicons name="volume-medium" size={18} color={colors.textMuted} />
+              <Ionicons name='volume-medium' size={18} color={colors.textMuted} />
             </Pressable>
           )}
         </View>
         {front.phonetic && (
-          <ThemedText style={[styles.phonetic, { color: colors.textMuted }]}>
-            {front.phonetic}
-          </ThemedText>
+          <ThemedText style={[styles.phonetic, { color: colors.textMuted }]}>{front.phonetic}</ThemedText>
         )}
       </View>
 
@@ -77,21 +60,14 @@ export function Flashcard({
               highlightWord={front.word}
             />
             {stats && (
-              <CardStats
-                reviews={stats.reviews}
-                interval={stats.interval}
-                ease={stats.ease}
-                type={stats.type}
-              />
+              <CardStats reviews={stats.reviews} interval={stats.interval} ease={stats.ease} type={stats.type} />
             )}
           </ScrollView>
         )}
       </Animated.View>
 
       {/* Subtle divider line - Only when not revealed */}
-      {!isRevealed && (
-        <View style={[styles.divider, { backgroundColor: colors.border }]} />
-      )}
+      {!isRevealed && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
     </Pressable>
   );
 }
@@ -99,12 +75,11 @@ export function Flashcard({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.lg,
   },
   wordSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 48,
+    paddingVertical: 42,
   },
   wordRow: {
     flexDirection: 'row',
@@ -132,6 +107,7 @@ const styles = StyleSheet.create({
   },
   answerSection: {
     flex: 1,
+    paddingHorizontal: Spacing.sm,
   },
   scrollView: {
     flex: 1,

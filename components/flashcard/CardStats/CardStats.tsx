@@ -28,16 +28,10 @@ export function CardStats({ reviews, interval, ease, type }: CardStatsProps) {
       <View style={styles.row}>
         {stats.map((stat, index) => (
           <View key={stat.label} style={styles.statItem}>
-            {index > 0 && (
-              <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            )}
+            {index > 0 && <View style={[styles.divider, { backgroundColor: colors.border }]} />}
             <View style={styles.statContent}>
-              <ThemedText style={[styles.label, { color: colors.textMuted }]}>
-                {stat.label}
-              </ThemedText>
-              <ThemedText style={[styles.value, { color: colors.textSecondary }]}>
-                {stat.value}
-              </ThemedText>
+              <ThemedText style={[styles.label, { color: colors.textMuted }]}>{stat.label}</ThemedText>
+              <ThemedText style={[styles.value, { color: colors.textSecondary }]}>{stat.value}</ThemedText>
             </View>
           </View>
         ))}

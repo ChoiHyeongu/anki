@@ -1,10 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
 import { BorderRadius, Colors, FontFamily, Spacing } from '@/constants/theme';
@@ -30,12 +26,7 @@ interface RatingButtonProps {
   disabled: boolean;
 }
 
-function RatingButton({
-  rating,
-  interval,
-  onPress,
-  disabled,
-}: RatingButtonProps) {
+function RatingButton({ rating, interval, onPress, disabled }: RatingButtonProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const config = RATING_CONFIG[rating];
@@ -66,35 +57,21 @@ function RatingButton({
 
   return (
     <View style={styles.buttonWrapper}>
-      {interval && (
-        <ThemedText style={[styles.interval, { color: colors.textMuted }]}>
-          {interval}
-        </ThemedText>
-      )}
+      {interval && <ThemedText style={[styles.interval, { color: colors.textMuted }]}>{interval}</ThemedText>}
       <AnimatedPressable
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
-        style={[
-          styles.button,
-          animatedStyle,
-          { opacity: disabled ? 0.5 : 1 },
-        ]}
+        style={[styles.button, animatedStyle, { opacity: disabled ? 0.5 : 1 }]}
       >
-        <ThemedText style={[styles.label, { color: config.color }]}>
-          {config.label}
-        </ThemedText>
+        <ThemedText style={[styles.label, { color: config.color }]}>{config.label}</ThemedText>
       </AnimatedPressable>
     </View>
   );
 }
 
-export function RatingButtons({
-  onRate,
-  intervals,
-  disabled = false,
-}: RatingButtonsProps) {
+export function RatingButtons({ onRate, intervals, disabled = false }: RatingButtonsProps) {
   return (
     <View style={styles.container}>
       {RATINGS.map((rating) => (
@@ -115,8 +92,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: 48,
   },
   buttonWrapper: {
     flex: 1,

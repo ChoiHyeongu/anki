@@ -1,6 +1,5 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DeckList } from '@/components/deck';
@@ -39,30 +38,7 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <ThemedText style={styles.title}>라이브러리</ThemedText>
-        <View style={styles.headerActions}>
-          <Pressable
-            onPress={handleSyncPress}
-            style={styles.iconButton}
-            hitSlop={8}
-          >
-            <Ionicons
-              name="sync-outline"
-              size={22}
-              color={colors.textMuted}
-            />
-          </Pressable>
-          <Pressable
-            onPress={handleSettingsPress}
-            style={styles.iconButton}
-            hitSlop={8}
-          >
-            <Ionicons
-              name="settings-outline"
-              size={22}
-              color={colors.textMuted}
-            />
-          </Pressable>
-        </View>
+        <View style={styles.headerActions}></View>
       </View>
 
       <DeckList decks={mockDecks} onDeckPress={handleDeckPress} />
