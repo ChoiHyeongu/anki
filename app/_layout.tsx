@@ -14,6 +14,7 @@ import 'react-native-reanimated';
 
 import { AnkiDarkTheme, AnkiLightTheme } from '@/constants/navigation-theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DatabaseProvider } from '@/lib/db';
 
 // Prevent splash screen from auto-hiding until fonts are loaded
 SplashScreen.preventAutoHideAsync();
@@ -43,13 +44,15 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? AnkiDarkTheme : AnkiLightTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="study" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="light" />
-    </ThemeProvider>
+    <DatabaseProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? AnkiDarkTheme : AnkiLightTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="study" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+        <StatusBar style="light" />
+      </ThemeProvider>
+    </DatabaseProvider>
   );
 }

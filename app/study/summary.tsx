@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,14 +12,20 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function SummaryScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    totalReviewed?: string;
+    newCardsLearned?: string;
+    reviewCards?: string;
+    learningCards?: string;
+  }>();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const scale = useSharedValue(1);
 
-  // Mock stats - replace with actual session data
-  const reviewCards = 38;
-  const newCards = 12;
+  // Parse session stats from route params
+  const reviewCards = parseInt(params.reviewCards ?? '0', 10);
+  const newCards = parseInt(params.newCardsLearned ?? '0', 10);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

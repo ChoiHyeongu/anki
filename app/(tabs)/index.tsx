@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCallback, useState } from 'react';
 
 import { DeckList } from '@/components/deck';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, FontFamily, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { mockDecks } from '@/lib/mock-data';
+import { useDecks } from '@/hooks';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -14,17 +15,51 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
+  const { decks, isLoading, error, refresh } = useDecks();
+  const [refreshing, setRefreshing] = useState(false);
+
   const handleDeckPress = (deckId: string) => {
     router.push(`/study/${deckId}`);
   };
 
-  const handleSyncPress = () => {
-    // TODO: Implement sync
-  };
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
 
-  const handleSettingsPress = () => {
-    // TODO: Navigate to settings
-  };
+  // Loading state
+  if (isLoading && decks.length === 0) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  // Error state
+  if (error && decks.length === 0) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
+      >
+        <ThemedText style={styles.errorText}>
+          덱을 불러오지 못했습니다
+        </ThemedText>
+        <ThemedText style={styles.errorMessage}>{error.message}</ThemedText>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -41,7 +76,18 @@ export default function HomeScreen() {
         <View style={styles.headerActions}></View>
       </View>
 
-      <DeckList decks={mockDecks} onDeckPress={handleDeckPress} />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.accent}
+          />
+        }
+      >
+        <DeckList decks={decks} onDeckPress={handleDeckPress} />
+      </ScrollView>
     </View>
   );
 }
@@ -49,6 +95,10 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -70,5 +120,20 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: Spacing.xs,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  errorText: {
+    fontSize: 18,
+    fontFamily: FontFamily.semiBold,
+    marginBottom: Spacing.sm,
+  },
+  errorMessage: {
+    fontSize: 14,
+    fontFamily: FontFamily.regular,
+    opacity: 0.6,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.xl,
   },
 });

@@ -1,56 +1,127 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Flashcard } from '@/components/flashcard';
 import { RatingButtons, RevealButton, StudyHeader } from '@/components/study';
 import type { Rating } from '@/components/study/RatingButtons';
-import { Colors } from '@/constants/theme';
+import { ThemedText } from '@/components/themed-text';
+import { Colors, FontFamily, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { mockCards } from '@/lib/mock-data';
+import { useStudySession } from '@/hooks';
 
 export default function StudyScreen() {
-  const { deckId: _deckId } = useLocalSearchParams<{ deckId: string }>();
+  const { deckId } = useLocalSearchParams<{ deckId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [history, setHistory] = useState<number[]>([]);
+  const {
+    isLoading,
+    error,
+    currentCard,
+    currentIndex,
+    totalCards,
+    isComplete,
+    canUndo,
+    intervalPreviews,
+    sessionStats,
+    submitRating,
+    undoRating,
+  } = useStudySession(deckId ?? '');
 
-  const currentCard = mockCards[currentIndex];
-  const totalCards = mockCards.length;
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  // Navigate to summary when session is complete
+  useEffect(() => {
+    if (isComplete && totalCards > 0) {
+      router.replace({
+        pathname: '/study/summary',
+        params: {
+          totalReviewed: sessionStats.totalReviewed.toString(),
+          newCardsLearned: sessionStats.newCardsLearned.toString(),
+          reviewCards: sessionStats.reviewCards.toString(),
+          learningCards: sessionStats.learningCards.toString(),
+        },
+      });
+    }
+  }, [isComplete, totalCards, sessionStats, router]);
+
+  // Reset reveal state when card changes
+  useEffect(() => {
+    setIsRevealed(false);
+  }, [currentCard?.id]);
 
   const handleClose = () => {
     router.back();
   };
 
-  const handleUndo = () => {
-    if (history.length > 0) {
-      const previousIndex = history[history.length - 1];
-      setHistory((prev) => prev.slice(0, -1));
-      setCurrentIndex(previousIndex);
-      setIsRevealed(false);
-    }
+  const handleUndo = async () => {
+    await undoRating();
+    setIsRevealed(false);
   };
 
   const handleReveal = () => {
     setIsRevealed(true);
   };
 
-  const handleRate = (rating: Rating) => {
-    setHistory((prev) => [...prev, currentIndex]);
-
-    if (currentIndex < totalCards - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      setIsRevealed(false);
-    } else {
-      router.replace('/study/summary');
-    }
+  const handleRate = async (rating: Rating) => {
+    await submitRating(rating);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
+      >
+        <ThemedText style={styles.errorText}>오류가 발생했습니다</ThemedText>
+        <ThemedText style={styles.errorMessage}>{error.message}</ThemedText>
+      </View>
+    );
+  }
+
+  // No cards to study
+  if (!currentCard) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.centered,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
+      >
+        <ThemedText style={styles.emptyText}>학습할 카드가 없습니다</ThemedText>
+        <ThemedText
+          style={styles.emptyMessage}
+          onPress={() => router.back()}
+        >
+          돌아가기
+        </ThemedText>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -68,7 +139,7 @@ export default function StudyScreen() {
         total={totalCards}
         onClose={handleClose}
         onUndo={handleUndo}
-        canUndo={history.length > 0}
+        canUndo={canUndo}
       />
 
       <Flashcard
@@ -80,17 +151,10 @@ export default function StudyScreen() {
       />
 
       {isRevealed ? (
-        <>
-          <RatingButtons
-            onRate={handleRate}
-            intervals={{
-              again: '1m',
-              hard: '2d',
-              good: '4d',
-              easy: '7d',
-            }}
-          />
-        </>
+        <RatingButtons
+          onRate={handleRate}
+          intervals={intervalPreviews ?? undefined}
+        />
       ) : (
         <RevealButton />
       )}
@@ -101,5 +165,31 @@ export default function StudyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 18,
+    fontFamily: FontFamily.semiBold,
+    marginBottom: Spacing.sm,
+  },
+  errorMessage: {
+    fontSize: 14,
+    fontFamily: FontFamily.regular,
+    opacity: 0.6,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontFamily: FontFamily.medium,
+    marginBottom: Spacing.md,
+  },
+  emptyMessage: {
+    fontSize: 14,
+    fontFamily: FontFamily.regular,
+    opacity: 0.6,
   },
 });
