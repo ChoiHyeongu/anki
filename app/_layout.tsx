@@ -43,9 +43,9 @@ export default function RootLayout() {
     <DatabaseProvider>
       <ThemeProvider value={colorScheme === 'dark' ? AnkiDarkTheme : AnkiLightTheme}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="study" />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="study" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
         </Stack>
         <StatusBar style="light" />
       </ThemeProvider>
