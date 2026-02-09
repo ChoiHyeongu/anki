@@ -6,6 +6,14 @@
 
 `React Native` `Expo` `TypeScript` `SQLite`
 
+## AI Tools
+
+| 용도 | 도구 |
+|:---:|:---:|
+| 디자인 | [Stitch](https://stitch.withgoogle.com/) |
+| 개발 | [Claude Code](https://claude.ai/code) |
+| 설계 및 덱 생성 | [Gemini](https://gemini.google.com/) |
+
 ---
 
 ## 이런 분들을 위해 만들었어요
