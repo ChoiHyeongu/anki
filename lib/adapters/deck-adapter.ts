@@ -13,6 +13,7 @@ export function adaptDeckToUI(dbDeck: DeckWithStats): Deck {
   // Today's due counts for the right side badges
   const stats: DeckStats = {
     review: dbDeck.reviewCount,
+    young: dbDeck.youngDueCount,
     learning: dbDeck.learningCount,
     new: dbDeck.newCount,
   };
@@ -61,7 +62,7 @@ export function adaptDecksToUI(dbDecks: DeckWithStats[]): Deck[] {
  * Calculate total due cards for a deck
  */
 export function getTotalDueCount(stats: DeckStats): number {
-  return stats.review + stats.learning + stats.new;
+  return stats.review + stats.young + stats.learning + stats.new;
 }
 
 /**

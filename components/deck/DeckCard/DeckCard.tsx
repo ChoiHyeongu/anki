@@ -61,7 +61,7 @@ export function DeckCard({
   // Colors for stats based on whether they have values
   // Active: SRS colors, Inactive: dimmed (zinc-600)
   const reviewColor = stats.review > 0 ? SRSColors.mature : colors.textDimmed;
-  const youngColor = detailedStats.young > 0 ? SRSColors.young : colors.textDimmed;
+  const youngColor = stats.young > 0 ? SRSColors.young : colors.textDimmed;
   const learningColor = stats.learning > 0 ? SRSColors.learning : colors.textDimmed;
   const newColor = stats.new > 0 ? SRSColors.new : colors.textDimmed;
 
@@ -110,7 +110,7 @@ export function DeckCard({
         </View>
         <View style={styles.statsRow}>
           <Text style={[styles.statNumber, { color: reviewColor }]}>{stats.review}</Text>
-          <Text style={[styles.statNumber, { color: youngColor }]}>{detailedStats.young}</Text>
+          <Text style={[styles.statNumber, { color: youngColor }]}>{stats.young}</Text>
           <Text style={[styles.statNumber, { color: learningColor }]}>{stats.learning}</Text>
           <Text style={[styles.statNumber, { color: newColor }]}>{stats.new}</Text>
         </View>

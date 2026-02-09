@@ -17,11 +17,12 @@ export interface DeckWithStats {
   // Today's due counts
   newCount: number;
   learningCount: number;
-  reviewCount: number;
+  reviewCount: number; // mature cards due now (interval >= 21 days)
+  youngDueCount: number; // young cards due now (interval < 21 days)
   // Overall stats
   totalCards: number;
-  youngCards: number; // review status with interval < 21 days
-  matureCards: number; // review status with interval >= 21 days
+  youngCards: number; // review status with interval < 21 days (total)
+  matureCards: number; // review status with interval >= 21 days (total)
   // Timing
   nextDueDate: number | null; // earliest due date for any card
   // Computed
@@ -48,7 +49,7 @@ export async function getAllDecksWithStats(): Promise<DeckWithStats[]> {
         : 0;
 
     const isCompleted =
-      stats.newCount === 0 && stats.learningCount === 0 && stats.reviewCount === 0;
+      stats.newCount === 0 && stats.learningCount === 0 && stats.reviewCount === 0 && stats.youngDueCount === 0;
 
     decksWithStats.push({
       id: deck.id,
@@ -57,6 +58,7 @@ export async function getAllDecksWithStats(): Promise<DeckWithStats[]> {
       newCount: stats.newCount,
       learningCount: stats.learningCount,
       reviewCount: stats.reviewCount,
+      youngDueCount: stats.youngDueCount,
       totalCards: stats.totalCards,
       youngCards: stats.youngCards,
       matureCards: stats.matureCards,
@@ -85,7 +87,7 @@ export async function getDeckWithStats(deckId: string): Promise<DeckWithStats | 
       : 0;
 
   const isCompleted =
-    stats.newCount === 0 && stats.learningCount === 0 && stats.reviewCount === 0;
+    stats.newCount === 0 && stats.learningCount === 0 && stats.reviewCount === 0 && stats.youngDueCount === 0;
 
   return {
     id: deck.id,
@@ -94,6 +96,7 @@ export async function getDeckWithStats(deckId: string): Promise<DeckWithStats | 
     newCount: stats.newCount,
     learningCount: stats.learningCount,
     reviewCount: stats.reviewCount,
+    youngDueCount: stats.youngDueCount,
     totalCards: stats.totalCards,
     youngCards: stats.youngCards,
     matureCards: stats.matureCards,

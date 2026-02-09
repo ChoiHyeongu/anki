@@ -79,10 +79,11 @@ export interface DeckStats {
   deckId: string;
   newCount: number;      // Cards with status 'new' (limited by daily limit)
   learningCount: number; // Cards with status 'learning' or 'relearning' due now
-  reviewCount: number;   // Cards with status 'review' due now
+  reviewCount: number;   // Cards with status 'review' due now (mature only, interval >= 21 days)
+  youngDueCount: number; // Cards with status 'review' and interval < 21 days, due now
   totalCards: number;    // Total cards in deck
-  youngCards: number;    // Cards with status 'review' and interval < 21 days
-  matureCards: number;   // Cards with status 'review' and interval >= 21 days
+  youngCards: number;    // Cards with status 'review' and interval < 21 days (total)
+  matureCards: number;   // Cards with status 'review' and interval >= 21 days (total)
   nextDueDate: number | null; // Earliest due date for any card (future)
 }
 

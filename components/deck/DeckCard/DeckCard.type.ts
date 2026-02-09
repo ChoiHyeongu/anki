@@ -1,6 +1,8 @@
 export interface DeckStats {
-  /** Cards due for review (mature cards) */
+  /** Mature cards due for review (interval >= 21 days) */
   review: number;
+  /** Young cards due for review (interval < 21 days) */
+  young: number;
   /** Cards currently being learned */
   learning: number;
   /** New cards not yet studied */
