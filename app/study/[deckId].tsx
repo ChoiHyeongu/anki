@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Flashcard } from '@/components/flashcard';
@@ -8,8 +8,8 @@ import { RatingButtons, RevealButton, StudyHeader } from '@/components/study';
 import type { Rating } from '@/components/study/RatingButtons';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, FontFamily, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useStudySession } from '@/hooks';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function StudyScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
@@ -74,14 +74,8 @@ export default function StudyScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <View
-        style={[
-          styles.container,
-          styles.centered,
-          { backgroundColor: colors.background, paddingTop: insets.top },
-        ]}
-      >
-        <ActivityIndicator size="large" color={colors.accent} />
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+        <ActivityIndicator size='large' color={colors.accent} />
       </View>
     );
   }
@@ -89,13 +83,7 @@ export default function StudyScreen() {
   // Error state
   if (error) {
     return (
-      <View
-        style={[
-          styles.container,
-          styles.centered,
-          { backgroundColor: colors.background, paddingTop: insets.top },
-        ]}
-      >
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         <ThemedText style={styles.errorText}>오류가 발생했습니다</ThemedText>
         <ThemedText style={styles.errorMessage}>{error.message}</ThemedText>
       </View>
@@ -105,18 +93,9 @@ export default function StudyScreen() {
   // No cards to study
   if (!currentCard) {
     return (
-      <View
-        style={[
-          styles.container,
-          styles.centered,
-          { backgroundColor: colors.background, paddingTop: insets.top },
-        ]}
-      >
+      <View style={[styles.container, styles.centered, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         <ThemedText style={styles.emptyText}>학습할 카드가 없습니다</ThemedText>
-        <ThemedText
-          style={styles.emptyMessage}
-          onPress={() => router.back()}
-        >
+        <ThemedText style={styles.emptyMessage} onPress={() => router.back()}>
           돌아가기
         </ThemedText>
       </View>
@@ -130,7 +109,7 @@ export default function StudyScreen() {
         {
           backgroundColor: colors.background,
           paddingTop: insets.top,
-          paddingBottom: insets.bottom,
+          paddingBottom: insets.bottom + Spacing.xl,
         },
       ]}
     >
@@ -150,14 +129,7 @@ export default function StudyScreen() {
         onReveal={handleReveal}
       />
 
-      {isRevealed ? (
-        <RatingButtons
-          onRate={handleRate}
-          intervals={intervalPreviews ?? undefined}
-        />
-      ) : (
-        <RevealButton />
-      )}
+      {isRevealed ? <RatingButtons onRate={handleRate} intervals={intervalPreviews ?? undefined} /> : <RevealButton />}
     </View>
   );
 }

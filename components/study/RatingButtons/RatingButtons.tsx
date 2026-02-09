@@ -90,7 +90,6 @@ export function RatingButtons({ onRate, intervals, disabled = false }: RatingBut
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: Spacing.sm,
     paddingHorizontal: Spacing.sm,
   },
   buttonWrapper: {

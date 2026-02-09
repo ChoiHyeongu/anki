@@ -49,7 +49,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.sm,
   },
   statItem: {
     flexDirection: 'row',
@@ -59,7 +58,6 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: 24,
-    marginRight: Spacing.md,
   },
   statContent: {
     flex: 1,
