@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCallback, useState } from 'react';
 
@@ -76,18 +76,12 @@ export default function HomeScreen() {
         <View style={styles.headerActions}></View>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.accent}
-          />
-        }
-      >
-        <DeckList decks={decks} onDeckPress={handleDeckPress} />
-      </ScrollView>
+      <DeckList
+        decks={decks}
+        onDeckPress={handleDeckPress}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+      />
     </View>
   );
 }
@@ -120,9 +114,6 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: Spacing.xs,
-  },
-  scrollContent: {
-    flexGrow: 1,
   },
   errorText: {
     fontSize: 18,

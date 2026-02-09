@@ -20,4 +20,8 @@ export interface DeckListProps {
   decks: Deck[];
   /** Callback when a deck is pressed */
   onDeckPress?: (deckId: string) => void;
+  /** Whether refresh is in progress */
+  refreshing?: boolean;
+  /** Callback when pull-to-refresh is triggered */
+  onRefresh?: () => void;
 }

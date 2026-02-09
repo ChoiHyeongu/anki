@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Colors, FontFamily, Spacing } from '@/constants/theme';
@@ -8,7 +8,7 @@ import { DeckCard } from '../DeckCard';
 
 import type { Deck, DeckListProps } from './DeckList.type';
 
-export function DeckList({ decks, onDeckPress }: DeckListProps) {
+export function DeckList({ decks, onDeckPress, refreshing, onRefresh }: DeckListProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -38,6 +38,15 @@ export function DeckList({ decks, onDeckPress }: DeckListProps) {
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={renderEmpty}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing ?? false}
+            onRefresh={onRefresh}
+            tintColor={colors.accent}
+          />
+        ) : undefined
+      }
     />
   );
 }
