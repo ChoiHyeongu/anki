@@ -167,8 +167,9 @@ export async function submitRating(
 
 /**
  * Undo the last rating (only for the most recent card)
+ * @returns The restored CardState, or null if undo was not possible
  */
-export async function undoRating(cardId: string): Promise<boolean> {
+export async function undoRating(cardId: string): Promise<CardState | null> {
   return undoLastReview(cardId);
 }
 

@@ -286,12 +286,13 @@ export async function getLastReviewLog(cardId: string): Promise<DbReviewLog | nu
 
 /**
  * Undo the last review for a card
+ * @returns The restored CardState, or null if undo was not possible
  */
-export async function undoLastReview(cardId: string): Promise<boolean> {
+export async function undoLastReview(cardId: string): Promise<CardState | null> {
   const db = await getDatabase();
 
   const lastLog = await getLastReviewLog(cardId);
-  if (!lastLog || !lastLog.prev_state) return false;
+  if (!lastLog || !lastLog.prev_state) return null;
 
   const prevState: CardState = JSON.parse(lastLog.prev_state);
 
@@ -323,5 +324,5 @@ export async function undoLastReview(cardId: string): Promise<boolean> {
     await txn.runAsync('DELETE FROM review_logs WHERE id = ?', [lastLog.id]);
   });
 
-  return true;
+  return prevState;
 }

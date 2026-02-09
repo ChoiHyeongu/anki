@@ -10,7 +10,13 @@ import {
   canUndoRating,
 } from '@/lib/db';
 import { getIntervalPreviews } from '@/lib/srs';
-import { adaptCardToUI, mapUIRatingToSRS, adaptIntervalPreviewToUI } from '@/lib/adapters';
+import {
+  adaptCardToUI,
+  mapUIRatingToSRS,
+  adaptIntervalPreviewToUI,
+  adaptStateToStats,
+} from '@/lib/adapters';
+import type { CardState } from '@/lib/srs';
 import type { AdaptedCard } from '@/lib/adapters';
 import type { Rating as UIRating } from '@/components/study/RatingButtons/RatingButtons.type';
 import type { IntervalPreview } from '@/lib/srs';
@@ -41,8 +47,8 @@ type StudySessionAction =
   | { type: 'LOAD_START' }
   | { type: 'LOAD_SUCCESS'; cards: AdaptedCard[] }
   | { type: 'LOAD_ERROR'; error: Error }
-  | { type: 'RATE_CARD'; cardId: string; wasNew: boolean; wasLearning: boolean; wasReview: boolean }
-  | { type: 'UNDO_SUCCESS' }
+  | { type: 'RATE_CARD'; cardId: string; wasNew: boolean; wasLearning: boolean; wasReview: boolean; newState: CardState }
+  | { type: 'UNDO_SUCCESS'; cardId: string; restoredState: CardState }
   | { type: 'SET_PREVIEWS'; previews: Record<UIRating, string> | null }
   | { type: 'SET_CAN_UNDO'; canUndo: boolean };
 
@@ -113,9 +119,20 @@ function reducer(
         error: action.error,
       };
 
-    case 'RATE_CARD':
+    case 'RATE_CARD': {
+      const updatedCards = state.cards.map((card) =>
+        card.id === action.cardId
+          ? {
+              ...card,
+              state: action.newState,
+              stats: adaptStateToStats(action.newState),
+            }
+          : card
+      );
+
       return {
         ...state,
+        cards: updatedCards,
         currentIndex: state.currentIndex + 1,
         canUndo: true,
         lastReviewedCardId: action.cardId,
@@ -128,12 +145,24 @@ function reducer(
           reviewCards:
             state.sessionStats.reviewCards + (action.wasReview ? 1 : 0),
         },
-        intervalPreviews: null, // Reset until new card loads
+        intervalPreviews: null,
       };
+    }
 
-    case 'UNDO_SUCCESS':
+    case 'UNDO_SUCCESS': {
+      const updatedCards = state.cards.map((card) =>
+        card.id === action.cardId
+          ? {
+              ...card,
+              state: action.restoredState,
+              stats: adaptStateToStats(action.restoredState),
+            }
+          : card
+      );
+
       return {
         ...state,
+        cards: updatedCards,
         currentIndex: Math.max(0, state.currentIndex - 1),
         canUndo: false,
         lastReviewedCardId: null,
@@ -142,6 +171,7 @@ function reducer(
           totalReviewed: Math.max(0, state.sessionStats.totalReviewed - 1),
         },
       };
+    }
 
     case 'SET_PREVIEWS':
       return {
@@ -250,13 +280,18 @@ export function useStudySession(deckId: string): UseStudySessionReturn {
     const wasReview = card.state.status === 'review';
 
     try {
-      await dbSubmitRating(card.id, srsRating);
+      const result = await dbSubmitRating(card.id, srsRating);
+      if (!result?.newState) {
+        console.error('[useStudySession] Invalid result from submitRating');
+        return;
+      }
       dispatch({
         type: 'RATE_CARD',
         cardId: card.id,
         wasNew,
         wasLearning,
         wasReview,
+        newState: result.newState,
       });
     } catch (error) {
       console.error('[useStudySession] Failed to submit rating:', error);
@@ -270,9 +305,13 @@ export function useStudySession(deckId: string): UseStudySessionReturn {
     if (!canUndo || !lastReviewedCardId) return;
 
     try {
-      const undone = await dbUndoRating(lastReviewedCardId);
-      if (undone) {
-        dispatch({ type: 'UNDO_SUCCESS' });
+      const restoredState = await dbUndoRating(lastReviewedCardId);
+      if (restoredState) {
+        dispatch({
+          type: 'UNDO_SUCCESS',
+          cardId: lastReviewedCardId,
+          restoredState,
+        });
       }
     } catch (error) {
       console.error('[useStudySession] Failed to undo:', error);
