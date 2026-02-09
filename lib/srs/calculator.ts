@@ -49,12 +49,15 @@ function handleLearningCard(
         learningStep: 0,
         dueDate: reviewDate + steps[0] * MINUTE_MS,
       };
-    case 2:
+    case 2: {
+      // Hard: 현재 step 간격의 1.5배
+      const hardInterval = Math.round(steps[currentStep] * 1.5);
       return {
         ...state,
         status: 'learning',
-        dueDate: reviewDate + steps[currentStep] * MINUTE_MS,
+        dueDate: reviewDate + hardInterval * MINUTE_MS,
       };
+    }
     case 3:
       if (currentStep >= steps.length - 1) {
         return graduateCard(state, config, reviewDate, false);
@@ -144,11 +147,14 @@ function handleRelearningCard(
         learningStep: 0,
         dueDate: reviewDate + steps[0] * MINUTE_MS,
       };
-    case 2:
+    case 2: {
+      // Hard: 현재 step 간격의 1.5배
+      const hardInterval = Math.round(steps[currentStep] * 1.5);
       return {
         ...state,
-        dueDate: reviewDate + steps[currentStep] * MINUTE_MS,
+        dueDate: reviewDate + hardInterval * MINUTE_MS,
       };
+    }
     case 3:
       if (currentStep >= steps.length - 1) {
         return {
@@ -211,10 +217,11 @@ export function getIntervalPreviews(
       const steps = config.learningSteps;
       const currentStepMinutes = steps[learningStep] || steps[0];
       const nextStepMinutes = steps[learningStep + 1];
+      const hardMinutes = Math.round(currentStepMinutes * 1.5);
 
       return {
         again: formatMinutes(steps[0]),
-        hard: formatMinutes(currentStepMinutes),
+        hard: formatMinutes(hardMinutes),
         good: nextStepMinutes ? formatMinutes(nextStepMinutes) : formatDays(config.graduatingInterval),
         easy: formatDays(config.easyInterval),
       };
@@ -237,12 +244,13 @@ export function getIntervalPreviews(
     case 'relearning': {
       const steps = config.relearningSteps;
       const currentStepMinutes = steps[learningStep] || steps[0];
+      const hardMinutes = Math.round(currentStepMinutes * 1.5);
       const lapseInterval = Math.max(config.lapseMinInterval, Math.round(interval * 0.5));
       const easyLapseInterval = Math.max(config.lapseMinInterval, Math.round(interval * 0.7));
 
       return {
         again: formatMinutes(steps[0]),
-        hard: formatMinutes(currentStepMinutes),
+        hard: formatMinutes(hardMinutes),
         good:
           learningStep >= steps.length - 1
             ? formatDays(lapseInterval)
