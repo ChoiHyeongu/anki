@@ -1,11 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import { Platform, Pressable, StyleSheet, View, Text } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Colors, FontFamily, SRSColors, Spacing } from '@/constants/theme';
@@ -20,13 +16,12 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  */
 function formatDueDate(timestamp: number): string {
   const date = new Date(timestamp);
-  const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
-  return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
+  return `${month}.${day} ${hours}:${minutes}:${seconds}`;
 }
 
 export function DeckCard({
@@ -98,55 +93,31 @@ export function DeckCard({
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[
-        styles.container,
-        animatedStyle,
-        isCompleted && styles.completedContainer,
-      ]}
+      style={[styles.container, animatedStyle, isCompleted && styles.completedContainer]}
     >
       {/* Header Row: Title + Stats */}
       <View style={styles.headerRow}>
         <View style={styles.titleContainer}>
           <Text
-            style={[
-              styles.title,
-              { color: isCompleted ? colors.textMuted : colors.textSecondary },
-            ]}
+            style={[styles.title, { color: isCompleted ? colors.textMuted : colors.textSecondary }]}
             numberOfLines={1}
           >
             {title}
           </Text>
           {isCompleted && (
-            <Ionicons
-              name="checkmark-circle"
-              size={18}
-              color={SRSColors.review}
-              style={styles.checkIcon}
-            />
+            <Ionicons name='checkmark-circle' size={18} color={SRSColors.review} style={styles.checkIcon} />
           )}
         </View>
         <View style={styles.statsRow}>
-          <Text style={[styles.statNumber, { color: reviewColor }]}>
-            {stats.review}
-          </Text>
-          <Text style={[styles.statNumber, { color: youngColor }]}>
-            {detailedStats.young}
-          </Text>
-          <Text style={[styles.statNumber, { color: learningColor }]}>
-            {stats.learning}
-          </Text>
-          <Text style={[styles.statNumber, { color: newColor }]}>
-            {stats.new}
-          </Text>
+          <Text style={[styles.statNumber, { color: reviewColor }]}>{stats.review}</Text>
+          <Text style={[styles.statNumber, { color: youngColor }]}>{detailedStats.young}</Text>
+          <Text style={[styles.statNumber, { color: learningColor }]}>{stats.learning}</Text>
+          <Text style={[styles.statNumber, { color: newColor }]}>{stats.new}</Text>
         </View>
       </View>
 
       {/* Progress Bar */}
-      <ProgressBar
-        segments={progressSegments}
-        height={5}
-        trackColor={colors.borderMuted}
-      />
+      <ProgressBar segments={progressSegments} height={5} trackColor={colors.borderMuted} />
 
       {/* Bottom Row: Detailed Stats */}
       <View style={styles.bottomRow}>
@@ -155,25 +126,32 @@ export function DeckCard({
             총 <Text style={[styles.detailValue, { color: colors.text }]}>{detailedStats.total}</Text>
           </Text>
           <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
-            숙성 <Text style={[styles.detailValue, { color: hasYoung ? SRSColors.young : colors.textDimmed }]}>{detailedStats.young}</Text>
+            숙성{' '}
+            <Text style={[styles.detailValue, { color: hasYoung ? SRSColors.young : colors.textDimmed }]}>
+              {detailedStats.young}
+            </Text>
           </Text>
           <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
-            익힘 <Text style={[styles.detailValue, { color: detailedStats.mature > 0 ? SRSColors.mature : colors.textDimmed }]}>{detailedStats.mature}</Text>
+            익힘{' '}
+            <Text
+              style={[styles.detailValue, { color: detailedStats.mature > 0 ? SRSColors.mature : colors.textDimmed }]}
+            >
+              {detailedStats.mature}
+            </Text>
           </Text>
           <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
-            진행 <Text style={[styles.detailValue, { color: hasLearning ? SRSColors.learning : colors.textDimmed }]}>{detailedStats.learning}</Text>
+            진행{' '}
+            <Text style={[styles.detailValue, { color: hasLearning ? SRSColors.learning : colors.textDimmed }]}>
+              {detailedStats.learning}
+            </Text>
           </Text>
         </View>
-        <Text style={[styles.progressPercent, { color: colors.textMuted }]}>
-          {progress.toFixed(1)}%
-        </Text>
+        <Text style={[styles.progressPercent, { color: colors.textMuted }]}>{progress.toFixed(1)}%</Text>
       </View>
 
       {/* Next Due Time */}
       {nextDueDate && (
-        <Text style={[styles.nextDueTime, { color: colors.textMuted }]}>
-          다음 학습: {formatDueDate(nextDueDate)}
-        </Text>
+        <Text style={[styles.nextDueTime, { color: colors.textMuted }]}>다음: {formatDueDate(nextDueDate)}</Text>
       )}
     </AnimatedPressable>
   );
