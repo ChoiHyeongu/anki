@@ -29,6 +29,7 @@ npm run reset-project
 ### Tech Stack
 - **Framework**: React Native 0.81 with Expo SDK 54
 - **Routing**: expo-router (file-based routing)
+- **Database**: SQLite (expo-sqlite)
 - **Animation**: react-native-reanimated
 - **Navigation**: @react-navigation/native with bottom tabs
 - **Language**: TypeScript (strict mode)
@@ -36,28 +37,171 @@ npm run reset-project
 
 ### Project Structure
 ```
-app/                    # File-based routing (expo-router)
-├── _layout.tsx         # Root layout with ThemeProvider + font loading
-├── (tabs)/             # Tab navigation group
-│   ├── _layout.tsx     # Tab bar configuration
-│   ├── index.tsx       # Home tab
-│   └── explore.tsx     # Explore tab
-└── modal.tsx           # Modal screen
+app/                          # File-based routing (expo-router)
+├── _layout.tsx               # Root layout with providers
+├── index.tsx                 # Home screen (deck list)
+├── modal.tsx                 # Modal screen
+└── study/                    # Study session screens
+    ├── _layout.tsx           # Study stack layout
+    ├── [deckId].tsx          # Study session screen
+    └── summary.tsx           # Session summary screen
 
-components/             # Reusable components
-├── ui/                 # UI primitives (IconSymbol, Collapsible)
-├── themed-text.tsx     # Theme-aware text with typography variants
-├── themed-view.tsx     # Theme-aware container
-├── parallax-scroll-view.tsx
-└── haptic-tab.tsx      # Tab with haptic feedback
+components/
+├── deck/                     # Deck-related components
+│   ├── DeckCard/             # Individual deck card
+│   ├── DeckList/             # Deck list container
+│   └── DeckStatsBadge/       # Stats badge component
+├── flashcard/                # Flashcard components
+│   ├── Flashcard/            # Flippable card container
+│   ├── FlashcardFront/       # Card front (word)
+│   ├── FlashcardBack/        # Card back (definition)
+│   └── CardStats/            # Card statistics display
+├── study/                    # Study session components
+│   ├── RatingButtons/        # Again/Hard/Good/Easy buttons
+│   ├── RevealButton/         # Show answer button
+│   ├── StudyHeader/          # Session progress header
+│   └── SessionSummaryCard/   # End of session summary
+├── ui/                       # UI primitives
+│   ├── ProgressBar/          # Progress bar component
+│   ├── StatCard/             # Statistics card
+│   ├── IconButton/           # Icon button
+│   └── IconSymbol/           # Platform-specific icons
+├── themed-text.tsx           # Theme-aware text
+└── themed-view.tsx           # Theme-aware container
 
-hooks/                  # Custom hooks
-├── use-color-scheme.ts # Platform-specific theme detection
-└── use-theme-color.ts  # Theme color resolution with ColorKey type
+lib/
+├── srs/                      # SRS algorithm implementation
+│   ├── calculator.ts         # Core SRS calculations
+│   ├── config.ts             # Default SRS configuration
+│   ├── types.ts              # CardState, Rating types
+│   └── utils.ts              # Time formatting utilities
+├── db/                       # Database layer
+│   ├── schema.ts             # SQLite table definitions
+│   ├── types.ts              # Database entity types
+│   ├── provider.tsx          # Database context provider
+│   ├── repositories/         # Data access layer
+│   │   ├── deck.ts           # Deck CRUD operations
+│   │   ├── card.ts           # Card CRUD operations
+│   │   ├── progress.ts       # Card progress & stats
+│   │   └── settings.ts       # App settings
+│   └── services/             # Business logic layer
+│       ├── deck.ts           # Deck with stats
+│       └── study.ts          # Study session logic
+├── adapters/                 # Data transformation
+│   ├── deck-adapter.ts       # DB → UI deck mapping
+│   └── card-adapter.ts       # DB → UI card mapping
+└── sync/                     # External data sync
+    ├── sheets-fetcher.ts     # Google Sheets integration
+    └── csv-parser.ts         # CSV parsing utilities
+
+hooks/
+├── use-decks.ts              # Deck list with auto-refresh
+├── use-study-session.ts      # Study session state management
+├── use-color-scheme.ts       # Platform theme detection
+└── use-theme-color.ts        # Theme color resolution
 
 constants/
-├── theme.ts            # Design tokens (Colors, Spacing, Typography)
-└── navigation-theme.ts # React Navigation v7 themes (AnkiDarkTheme, AnkiLightTheme)
+├── theme.ts                  # Design tokens (Colors, Spacing, Typography)
+└── navigation-theme.ts       # React Navigation themes
+```
+
+## Database Schema
+
+SQLite database with the following tables:
+
+```sql
+-- Decks (card collections)
+CREATE TABLE decks (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  created_at INTEGER NOT NULL
+);
+
+-- Cards (vocabulary items)
+CREATE TABLE cards (
+  id TEXT PRIMARY KEY,
+  deck_id TEXT NOT NULL REFERENCES decks(id),
+  front_word TEXT NOT NULL,
+  front_phonetic TEXT,
+  back_definition TEXT NOT NULL,
+  back_example TEXT,
+  back_synonyms TEXT,  -- JSON array
+  created_at INTEGER NOT NULL
+);
+
+-- Card progress (SRS state)
+CREATE TABLE card_progress (
+  card_id TEXT PRIMARY KEY REFERENCES cards(id),
+  status TEXT NOT NULL,      -- 'new' | 'learning' | 'relearning' | 'review'
+  interval INTEGER NOT NULL, -- in milliseconds
+  ease REAL NOT NULL,        -- ease factor (default 2.5)
+  due_date INTEGER NOT NULL, -- next review timestamp
+  learning_step INTEGER NOT NULL,
+  lapse_count INTEGER NOT NULL,
+  review_count INTEGER NOT NULL,
+  last_reviewed_at INTEGER
+);
+
+-- Review logs (for undo & statistics)
+CREATE TABLE review_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  card_id TEXT NOT NULL REFERENCES cards(id),
+  rating INTEGER NOT NULL,   -- 1-4
+  reviewed_at INTEGER NOT NULL,
+  time_taken_ms INTEGER,
+  prev_state TEXT           -- JSON for undo
+);
+```
+
+## SRS Algorithm
+
+Based on SM-2 algorithm with the following card states:
+
+```
+New → Learning → Review (Young/Mature)
+         ↑          ↓
+         └── Relearning ←┘ (on lapse)
+```
+
+### Card States
+
+| Status | Description | Interval Unit |
+|--------|-------------|---------------|
+| `new` | Never studied | - |
+| `learning` | Initial learning steps | Minutes |
+| `relearning` | Failed review, relearning | Minutes |
+| `review` | Graduated, spaced review | Days |
+
+### Review vs Young vs Mature
+
+- **Young**: `status = 'review'` AND `interval < 21 days`
+- **Mature**: `status = 'review'` AND `interval >= 21 days`
+
+### Rating Effects
+
+| Rating | Action |
+|--------|--------|
+| **Again (1)** | Reset to step 0, ease -0.2 |
+| **Hard (2)** | Current step × 1.5, ease -0.15 |
+| **Good (3)** | Next step or graduate |
+| **Easy (4)** | Graduate immediately with bonus |
+
+### Default Configuration (`lib/srs/config.ts`)
+
+```typescript
+{
+  learningSteps: [1, 10],      // minutes
+  relearningSteps: [10],      // minutes
+  graduatingInterval: 1,       // days
+  easyInterval: 4,             // days
+  minimumEase: 1.3,
+  easyBonus: 1.3,
+  hardMultiplier: 1.2,
+  lapseMinInterval: 1,         // days
+  maximumInterval: 36500,      // days (~100 years)
+  leechThreshold: 8,
+}
 ```
 
 ## Design System
@@ -81,7 +225,7 @@ Based on [Stitch Design](https://stitch.withgoogle.com/projects/1798464632101577
 background, surface, surfaceElevated
 
 // Text
-text, textSecondary, textMuted
+text, textSecondary, textMuted, textDimmed
 
 // Accent
 tint, accent, accentMuted
@@ -106,7 +250,8 @@ import { SRSColors } from '@/constants/theme';
 SRSColors.new       // #475569 - Slate (cards never studied)
 SRSColors.learning  // #a16207 - Amber (cards being learned)
 SRSColors.review    // #15803d - Green (cards due for review)
-SRSColors.mature    // #166534 - Dark green (well-known cards)
+SRSColors.young     // #0891b2 - Cyan (graduated, interval < 21 days)
+SRSColors.mature    // #166534 - Dark green (well-known, interval >= 21 days)
 ```
 
 ### Typography (`FontFamily`, `FontSize`)
@@ -153,7 +298,7 @@ BorderRadius.full // 9999
 ```typescript
 import type {
   ColorKey,        // keyof Colors.light (e.g., 'text', 'background', 'accent')
-  SRSColorKey,     // 'new' | 'learning' | 'review' | 'mature'
+  SRSColorKey,     // 'new' | 'learning' | 'review' | 'young' | 'mature'
   SpacingKey,      // 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
   BorderRadiusKey, // 'sm' | 'md' | 'lg' | 'xl' | 'full'
   FontSizeKey      // 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
@@ -206,6 +351,21 @@ Use `.ios.tsx` / `.android.tsx` / `.web.tsx` suffixes for platform-specific impl
 
 Screens in `app/` directory are routes. Parentheses `(tabs)` create layout groups without URL segments.
 
+### useFocusEffect for Auto-Refresh
+
+Use `@react-navigation/native`'s `useFocusEffect` (not expo-router) for screen focus refresh:
+```typescript
+import { useFocusEffect } from '@react-navigation/native';
+
+useFocusEffect(
+  useCallback(() => {
+    let mounted = true;
+    fetchData().then(data => mounted && setData(data));
+    return () => { mounted = false; };
+  }, [])
+);
+```
+
 ## Expo Configuration
 
 - New Architecture enabled (`newArchEnabled: true`)
@@ -213,11 +373,14 @@ Screens in `app/` directory are routes. Parentheses `(tabs)` create layout group
 - Typed Routes experiment enabled
 - URL scheme: `anki://`
 
-## Future Development Notes
+## Implemented Features
 
-This app will implement SRS algorithm for flashcard-based vocabulary learning. Core features to build:
-- Card deck management
-- SRS scheduling algorithm (SM-2 or similar)
-- Review sessions with card flipping
-- Progress tracking and statistics
-- Local data persistence
+- [x] Card deck management with statistics
+- [x] SM-2 based SRS scheduling algorithm
+- [x] Review sessions with card flipping animation
+- [x] Progress tracking (new/learning/young/mature)
+- [x] Local SQLite data persistence
+- [x] Undo last review
+- [x] Daily new card limit
+- [x] Next due time display
+- [x] Google Sheets sync for deck import
