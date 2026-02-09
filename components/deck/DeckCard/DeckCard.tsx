@@ -15,6 +15,20 @@ import type { DeckCardProps } from './DeckCard.type';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+/**
+ * Format timestamp to yyyy.mm.dd hh:mm:ss
+ */
+function formatDueDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
+}
+
 export function DeckCard({
   title,
   stats,
@@ -22,6 +36,7 @@ export function DeckCard({
   progress,
   youngProgress = 0,
   learningProgress = 0,
+  nextDueDate,
   isCompleted = false,
   onPress,
 }: DeckCardProps) {
@@ -153,6 +168,13 @@ export function DeckCard({
           {progress.toFixed(1)}%
         </Text>
       </View>
+
+      {/* Next Due Time */}
+      {nextDueDate && (
+        <Text style={[styles.nextDueTime, { color: colors.textMuted }]}>
+          다음 학습: {formatDueDate(nextDueDate)}
+        </Text>
+      )}
     </AnimatedPressable>
   );
 }
@@ -214,5 +236,10 @@ const styles = StyleSheet.create({
   progressPercent: {
     fontSize: 13,
     fontFamily: FontFamily.regular,
+  },
+  nextDueTime: {
+    fontSize: 12,
+    fontFamily: FontFamily.regular,
+    letterSpacing: -0.2,
   },
 });

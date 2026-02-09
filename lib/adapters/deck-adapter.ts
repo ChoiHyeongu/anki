@@ -45,6 +45,7 @@ export function adaptDeckToUI(dbDeck: DeckWithStats): Deck {
     progress: dbDeck.progress, // mature card percentage (0-100)
     youngProgress: Math.max(0, youngProgress), // ensure non-negative
     learningProgress: Math.max(0, learningProgress), // ensure non-negative
+    nextDueDate: dbDeck.nextDueDate,
     isCompleted: dbDeck.isCompleted,
   };
 }

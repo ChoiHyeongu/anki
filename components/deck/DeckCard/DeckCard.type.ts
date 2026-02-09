@@ -31,6 +31,8 @@ export interface DeckCardProps {
   youngProgress?: number;
   /** Learning progress percentage (0-100) - shown as stacked layer */
   learningProgress?: number;
+  /** Next due date timestamp (ms) for learning/relearning cards */
+  nextDueDate?: number | null;
   /** Whether this deck is completed (100% mature, no cards due) */
   isCompleted?: boolean;
   /** Callback when card is pressed */

@@ -22,6 +22,8 @@ export interface DeckWithStats {
   totalCards: number;
   youngCards: number; // review status with interval < 21 days
   matureCards: number; // review status with interval >= 21 days
+  // Timing
+  nextDueDate: number | null; // earliest due date for learning cards
   // Computed
   progress: number; // percentage of mature cards
   isCompleted: boolean;
@@ -58,6 +60,7 @@ export async function getAllDecksWithStats(): Promise<DeckWithStats[]> {
       totalCards: stats.totalCards,
       youngCards: stats.youngCards,
       matureCards: stats.matureCards,
+      nextDueDate: stats.nextDueDate,
       progress,
       isCompleted,
     });
@@ -94,6 +97,7 @@ export async function getDeckWithStats(deckId: string): Promise<DeckWithStats | 
     totalCards: stats.totalCards,
     youngCards: stats.youngCards,
     matureCards: stats.matureCards,
+    nextDueDate: stats.nextDueDate,
     progress,
     isCompleted,
   };

@@ -234,6 +234,17 @@ export async function getDeckStats(
     [deckId]
   );
 
+  // Get next due date for learning/relearning cards (future only)
+  const nextDue = await db.getFirstAsync<{ due_date: number }>(
+    `SELECT MIN(cp.due_date) as due_date
+     FROM card_progress cp
+     JOIN cards c ON cp.card_id = c.id
+     WHERE c.deck_id = ?
+       AND cp.status IN ('learning', 'relearning')
+       AND cp.due_date > ?`,
+    [deckId, now]
+  );
+
   return {
     deckId,
     newCount: availableNew,
@@ -242,6 +253,7 @@ export async function getDeckStats(
     totalCards: totalCards?.count ?? 0,
     youngCards: youngCards?.count ?? 0,
     matureCards: matureCards?.count ?? 0,
+    nextDueDate: nextDue?.due_date ?? null,
   };
 }
 

@@ -13,6 +13,8 @@ export interface Deck {
   youngProgress?: number;
   /** Learning progress percentage (0-100) */
   learningProgress?: number;
+  /** Next due date timestamp (ms) for learning/relearning cards */
+  nextDueDate?: number | null;
   /** Whether deck is completed */
   isCompleted?: boolean;
 }

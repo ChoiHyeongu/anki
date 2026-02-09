@@ -20,6 +20,7 @@ export function DeckList({ decks, onDeckPress, refreshing, onRefresh }: DeckList
       progress={item.progress}
       youngProgress={item.youngProgress}
       learningProgress={item.learningProgress}
+      nextDueDate={item.nextDueDate}
       isCompleted={item.isCompleted}
       onPress={() => onDeckPress?.(item.id)}
     />
