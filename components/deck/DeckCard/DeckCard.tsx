@@ -20,6 +20,7 @@ export function DeckCard({
   stats,
   detailedStats,
   progress,
+  youngProgress = 0,
   learningProgress = 0,
   isCompleted = false,
   onPress,
@@ -48,28 +49,34 @@ export function DeckCard({
   };
 
   // Colors for stats based on whether they have values
-  // Active: white/SRS colors, Inactive: dimmed (zinc-600)
-  const reviewColor = stats.review > 0 ? colors.text : colors.textDimmed;
+  // Active: SRS colors, Inactive: dimmed (zinc-600)
+  const reviewColor = stats.review > 0 ? SRSColors.mature : colors.textDimmed;
+  const youngColor = detailedStats.young > 0 ? SRSColors.young : colors.textDimmed;
   const learningColor = stats.learning > 0 ? SRSColors.learning : colors.textDimmed;
   const newColor = stats.new > 0 ? SRSColors.new : colors.textDimmed;
 
-  // Progress bar segments (learning on bottom, mature on top)
+  // Progress bar segments (learning on bottom, young in middle, mature on top)
   const progressSegments = [
     {
-      value: progress + learningProgress,
+      value: progress + youngProgress + learningProgress,
       color: SRSColors.learning,
       zIndex: 1,
     },
     {
-      value: progress,
-      color: SRSColors.review,
+      value: progress + youngProgress,
+      color: SRSColors.young,
       zIndex: 2,
+    },
+    {
+      value: progress,
+      color: SRSColors.mature,
+      zIndex: 3,
     },
   ];
 
   // Determine bottom row labels based on state
+  const hasYoung = detailedStats.young > 0;
   const hasLearning = detailedStats.learning > 0;
-  const hasNew = detailedStats.total - detailedStats.mature - detailedStats.learning > 0;
 
   return (
     <AnimatedPressable
@@ -107,6 +114,9 @@ export function DeckCard({
           <Text style={[styles.statNumber, { color: reviewColor }]}>
             {stats.review}
           </Text>
+          <Text style={[styles.statNumber, { color: youngColor }]}>
+            {detailedStats.young}
+          </Text>
           <Text style={[styles.statNumber, { color: learningColor }]}>
             {stats.learning}
           </Text>
@@ -130,18 +140,14 @@ export function DeckCard({
             총 <Text style={[styles.detailValue, { color: colors.text }]}>{detailedStats.total}</Text>
           </Text>
           <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
-            익힘 <Text style={[styles.detailValue, { color: SRSColors.review }]}>{detailedStats.mature}</Text>
+            숙성 <Text style={[styles.detailValue, { color: hasYoung ? SRSColors.young : colors.textDimmed }]}>{detailedStats.young}</Text>
           </Text>
-          {hasLearning && (
-            <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
-              진행 <Text style={[styles.detailValue, { color: SRSColors.learning }]}>{detailedStats.learning}</Text>
-            </Text>
-          )}
-          {hasNew && !hasLearning && (
-            <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
-              미시작 <Text style={[styles.detailValue, { color: SRSColors.new }]}>{detailedStats.total - detailedStats.mature}</Text>
-            </Text>
-          )}
+          <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
+            익힘 <Text style={[styles.detailValue, { color: detailedStats.mature > 0 ? SRSColors.mature : colors.textDimmed }]}>{detailedStats.mature}</Text>
+          </Text>
+          <Text style={[styles.detailLabel, { color: colors.textMuted }]}>
+            진행 <Text style={[styles.detailValue, { color: hasLearning ? SRSColors.learning : colors.textDimmed }]}>{detailedStats.learning}</Text>
+          </Text>
         </View>
         <Text style={[styles.progressPercent, { color: colors.textMuted }]}>
           {progress.toFixed(1)}%
@@ -180,12 +186,12 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    gap: Spacing.lg,
+    gap: Spacing.sm,
   },
   statNumber: {
     fontSize: 16,
     fontFamily: FontFamily.medium,
-    minWidth: 20,
+    minWidth: 18,
     textAlign: 'right',
   },
   bottomRow: {

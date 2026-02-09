@@ -10,7 +10,9 @@ export interface DeckStats {
 export interface DeckDetailedStats {
   /** Total cards in the deck */
   total: number;
-  /** Cards that are mature (well-known) */
+  /** Young cards (review status with interval < 21 days) */
+  young: number;
+  /** Cards that are mature (well-known, interval >= 21 days) */
   mature: number;
   /** Cards currently being learned */
   learning: number;
@@ -25,6 +27,8 @@ export interface DeckCardProps {
   detailedStats: DeckDetailedStats;
   /** Progress percentage (0-100) for mature cards */
   progress: number;
+  /** Young progress percentage (0-100) - review cards with interval < 21 days */
+  youngProgress?: number;
   /** Learning progress percentage (0-100) - shown as stacked layer */
   learningProgress?: number;
   /** Whether this deck is completed (100% mature, no cards due) */

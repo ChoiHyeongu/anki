@@ -18,6 +18,7 @@ export function DeckList({ decks, onDeckPress, refreshing, onRefresh }: DeckList
       stats={item.stats}
       detailedStats={item.detailedStats}
       progress={item.progress}
+      youngProgress={item.youngProgress}
       learningProgress={item.learningProgress}
       isCompleted={item.isCompleted}
       onPress={() => onDeckPress?.(item.id)}

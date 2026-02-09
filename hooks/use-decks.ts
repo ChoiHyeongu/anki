@@ -2,7 +2,8 @@
  * useDecks Hook
  * Fetches and manages deck list data from the database
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { getAllDecksWithStats } from '@/lib/db';
 import { adaptDecksToUI } from '@/lib/adapters';
 import type { Deck } from '@/components/deck/DeckList/DeckList.type';
@@ -62,38 +63,43 @@ export function useDecks(): UseDecksReturn {
     }
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
+  // 화면이 포커스될 때마다 덱 목록 새로고침
+  // @react-navigation/native에서 import (expo-router 버전은 2회 호출 이슈 있음)
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
 
-    async function load() {
-      try {
-        const dbDecks = await getAllDecksWithStats();
-        if (mounted) {
-          const uiDecks = adaptDecksToUI(dbDecks);
-          setState({
-            decks: uiDecks,
-            isLoading: false,
-            error: null,
-          });
-        }
-      } catch (error) {
-        if (mounted) {
-          console.error('[useDecks] Failed to fetch decks:', error);
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-            error: error instanceof Error ? error : new Error(String(error)),
-          }));
+      async function load() {
+        try {
+          const dbDecks = await getAllDecksWithStats();
+
+          if (mounted) {
+            const uiDecks = adaptDecksToUI(dbDecks);
+            setState({
+              decks: uiDecks,
+              isLoading: false,
+              error: null,
+            });
+          }
+        } catch (error) {
+          if (mounted) {
+            console.error('[useDecks] Failed to fetch decks:', error);
+            setState((prev) => ({
+              ...prev,
+              isLoading: false,
+              error: error instanceof Error ? error : new Error(String(error)),
+            }));
+          }
         }
       }
-    }
 
-    load();
+      load();
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
 
   return {
     ...state,

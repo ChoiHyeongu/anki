@@ -9,6 +9,8 @@ export interface Deck {
   detailedStats: DeckDetailedStats;
   /** Progress percentage (0-100) for mature cards */
   progress: number;
+  /** Young progress percentage (0-100) - review cards with interval < 21 days */
+  youngProgress?: number;
   /** Learning progress percentage (0-100) */
   learningProgress?: number;
   /** Whether deck is completed */

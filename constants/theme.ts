@@ -19,7 +19,8 @@ export const SRSColors = {
   new: '#475569',      // Slate - cards never studied
   learning: '#a16207', // Amber - cards being learned
   review: '#15803d',   // Green - cards due for review
-  mature: '#166534',   // Dark green - well-known cards
+  young: '#0891b2',    // Cyan - graduated but interval < 21 days
+  mature: '#166534',   // Dark green - well-known cards (interval >= 21 days)
 } as const;
 
 // Zinc color scale for consistent grays

@@ -20,7 +20,8 @@ export interface DeckWithStats {
   reviewCount: number;
   // Overall stats
   totalCards: number;
-  matureCards: number;
+  youngCards: number; // review status with interval < 21 days
+  matureCards: number; // review status with interval >= 21 days
   // Computed
   progress: number; // percentage of mature cards
   isCompleted: boolean;
@@ -55,6 +56,7 @@ export async function getAllDecksWithStats(): Promise<DeckWithStats[]> {
       learningCount: stats.learningCount,
       reviewCount: stats.reviewCount,
       totalCards: stats.totalCards,
+      youngCards: stats.youngCards,
       matureCards: stats.matureCards,
       progress,
       isCompleted,
@@ -90,6 +92,7 @@ export async function getDeckWithStats(deckId: string): Promise<DeckWithStats | 
     learningCount: stats.learningCount,
     reviewCount: stats.reviewCount,
     totalCards: stats.totalCards,
+    youngCards: stats.youngCards,
     matureCards: stats.matureCards,
     progress,
     isCompleted,

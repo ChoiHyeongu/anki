@@ -20,9 +20,16 @@ export function adaptDeckToUI(dbDeck: DeckWithStats): Deck {
   // Detailed stats for the bottom row
   const detailedStats: DeckDetailedStats = {
     total: dbDeck.totalCards,
+    young: dbDeck.youngCards,
     mature: dbDeck.matureCards,
     learning: dbDeck.learningCount,
   };
+
+  // Calculate young progress (percentage of young cards - review with interval < 21 days)
+  const youngProgress =
+    dbDeck.totalCards > 0
+      ? Math.round((dbDeck.youngCards / dbDeck.totalCards) * 100)
+      : 0;
 
   // Calculate learning progress (percentage of cards in learning/relearning status)
   const learningProgress =
@@ -36,6 +43,7 @@ export function adaptDeckToUI(dbDeck: DeckWithStats): Deck {
     stats,
     detailedStats,
     progress: dbDeck.progress, // mature card percentage (0-100)
+    youngProgress: Math.max(0, youngProgress), // ensure non-negative
     learningProgress: Math.max(0, learningProgress), // ensure non-negative
     isCompleted: dbDeck.isCompleted,
   };

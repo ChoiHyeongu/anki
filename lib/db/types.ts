@@ -81,7 +81,8 @@ export interface DeckStats {
   learningCount: number; // Cards with status 'learning' or 'relearning' due now
   reviewCount: number;   // Cards with status 'review' due now
   totalCards: number;    // Total cards in deck
-  matureCards: number;
+  youngCards: number;    // Cards with status 'review' and interval < 21 days
+  matureCards: number;   // Cards with status 'review' and interval >= 21 days
 }
 
 /**

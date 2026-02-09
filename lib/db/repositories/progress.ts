@@ -205,14 +205,26 @@ export async function getDeckStats(
   const studiedToday = newStudiedToday?.count ?? 0;
   const availableNew = Math.min(totalNew, Math.max(0, dailyNewLimit - studiedToday));
 
-  // Get mature card count (interval > 21 days = 21 * 24 * 60 * 60 * 1000 ms)
+  // Get mature card count (interval >= 21 days = 21 * 24 * 60 * 60 * 1000 ms)
   const matureThreshold = 21 * 24 * 60 * 60 * 1000;
   const matureCards = await db.getFirstAsync<{ count: number }>(
     `SELECT COUNT(*) as count
      FROM card_progress cp
      JOIN cards c ON cp.card_id = c.id
      WHERE c.deck_id = ?
+       AND cp.status = 'review'
        AND cp.interval >= ?`,
+    [deckId, matureThreshold]
+  );
+
+  // Get young card count (review status with interval < 21 days)
+  const youngCards = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count
+     FROM card_progress cp
+     JOIN cards c ON cp.card_id = c.id
+     WHERE c.deck_id = ?
+       AND cp.status = 'review'
+       AND cp.interval < ?`,
     [deckId, matureThreshold]
   );
 
@@ -228,6 +240,7 @@ export async function getDeckStats(
     learningCount: learningDue?.count ?? 0,
     reviewCount: reviewDue?.count ?? 0,
     totalCards: totalCards?.count ?? 0,
+    youngCards: youngCards?.count ?? 0,
     matureCards: matureCards?.count ?? 0,
   };
 }
