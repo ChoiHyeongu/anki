@@ -2,14 +2,14 @@
  * Database Seed Data
  * Initialize default settings on first run
  */
-import { initializeSettings, getSettings } from './repositories/settings';
+import { initializeSettings, getSetting } from './repositories/settings';
 
 /**
  * Check if database has been initialized
  */
 export async function isDatabaseSeeded(): Promise<boolean> {
-  const settings = await getSettings();
-  return settings !== null;
+  const setting = await getSetting('dailyNewCardLimit');
+  return setting !== null;
 }
 
 /**
