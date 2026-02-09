@@ -212,6 +212,161 @@ export async function getCardCountByStatus(
   return counts;
 }
 
+/**
+ * Check if a card exists by ID
+ */
+async function cardExists(id: string): Promise<boolean> {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) as count FROM cards WHERE id = ?',
+    [id]
+  );
+  return (result?.count ?? 0) > 0;
+}
+
+/**
+ * Upsert a card (insert or update on conflict)
+ * Preserves SRS progress - only updates card content
+ * Creates new card_progress only for new cards
+ */
+export async function upsertCard(input: CreateCardInput): Promise<void> {
+  const db = await getDatabase();
+  const id = input.id ?? generateId();
+  const now = Date.now();
+
+  // Check if card already exists
+  const exists = await cardExists(id);
+
+  if (exists) {
+    // Update only card content, preserve progress
+    await db.runAsync(
+      `UPDATE cards SET
+         front_word = ?,
+         front_phonetic = ?,
+         back_definition = ?,
+         back_example = ?,
+         back_synonyms = ?
+       WHERE id = ?`,
+      [
+        input.frontWord,
+        input.frontPhonetic ?? null,
+        input.backDefinition,
+        input.backExample ?? null,
+        stringifySynonyms(input.backSynonyms),
+        id,
+      ]
+    );
+  } else {
+    // Create new card with initial progress
+    const initialState = createNewCardState();
+
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      await txn.runAsync(
+        `INSERT INTO cards (id, deck_id, front_word, front_phonetic, back_definition, back_example, back_synonyms, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          input.deckId,
+          input.frontWord,
+          input.frontPhonetic ?? null,
+          input.backDefinition,
+          input.backExample ?? null,
+          stringifySynonyms(input.backSynonyms),
+          now,
+        ]
+      );
+
+      await txn.runAsync(
+        `INSERT INTO card_progress (card_id, status, interval, ease, due_date, learning_step, lapse_count, review_count)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          initialState.status,
+          initialState.interval,
+          initialState.ease,
+          initialState.dueDate,
+          initialState.learningStep,
+          initialState.lapseCount,
+          initialState.reviewCount,
+        ]
+      );
+    });
+  }
+}
+
+/**
+ * Upsert multiple cards in a transaction
+ * Preserves SRS progress for existing cards
+ */
+export async function upsertCards(inputs: CreateCardInput[]): Promise<void> {
+  const db = await getDatabase();
+  const now = Date.now();
+
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    for (const input of inputs) {
+      const id = input.id ?? generateId();
+
+      const existsResult = await txn.getFirstAsync<{ count: number }>(
+        'SELECT COUNT(*) as count FROM cards WHERE id = ?',
+        [id]
+      );
+      const exists = (existsResult?.count ?? 0) > 0;
+
+      if (exists) {
+        await txn.runAsync(
+          `UPDATE cards SET
+             front_word = ?,
+             front_phonetic = ?,
+             back_definition = ?,
+             back_example = ?,
+             back_synonyms = ?
+           WHERE id = ?`,
+          [
+            input.frontWord,
+            input.frontPhonetic ?? null,
+            input.backDefinition,
+            input.backExample ?? null,
+            stringifySynonyms(input.backSynonyms),
+            id,
+          ]
+        );
+      } else {
+        const initialState = createNewCardState();
+
+        await txn.runAsync(
+          `INSERT INTO cards (id, deck_id, front_word, front_phonetic, back_definition, back_example, back_synonyms, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            id,
+            input.deckId,
+            input.frontWord,
+            input.frontPhonetic ?? null,
+            input.backDefinition,
+            input.backExample ?? null,
+            stringifySynonyms(input.backSynonyms),
+            now,
+          ]
+        );
+
+        await txn.runAsync(
+          `INSERT INTO card_progress (card_id, status, interval, ease, due_date, learning_step, lapse_count, review_count)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            id,
+            initialState.status,
+            initialState.interval,
+            initialState.ease,
+            initialState.dueDate,
+            initialState.learningStep,
+            initialState.lapseCount,
+            initialState.reviewCount,
+          ]
+        );
+      }
+    }
+  });
+}
+
 function generateId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }

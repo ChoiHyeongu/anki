@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { initializeDatabase, getDatabase, type SQLiteDatabase } from './index';
+import { syncFromSpreadsheet } from '@/lib/sync';
 import { Colors, FontFamily } from '@/constants/theme';
 
 interface DatabaseContextValue {
@@ -45,6 +46,12 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
         if (mounted) {
           setState({ db, isReady: true, error: null });
         }
+
+        // Background sync from Google Sheets (non-blocking)
+        // App is already ready, sync runs in background
+        syncFromSpreadsheet().catch((err) => {
+          console.warn('[Sync] Background sync failed:', err);
+        });
       } catch (error) {
         console.error('[DB] Initialization failed:', error);
         if (mounted) {

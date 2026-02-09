@@ -93,6 +93,48 @@ export async function getDeckCardCount(deckId: string): Promise<number> {
   return result?.count ?? 0;
 }
 
+const UPSERT_DECK_SQL = `
+  INSERT INTO decks (id, title, description, created_at)
+  VALUES (?, ?, ?, ?)
+  ON CONFLICT(id) DO UPDATE SET
+    title = excluded.title,
+    description = excluded.description`;
+
+/**
+ * Upsert a deck (insert or update on conflict)
+ */
+export async function upsertDeck(input: CreateDeckInput): Promise<void> {
+  const db = await getDatabase();
+  const id = input.id ?? generateId();
+
+  await db.runAsync(UPSERT_DECK_SQL, [
+    id,
+    input.title,
+    input.description ?? null,
+    Date.now(),
+  ]);
+}
+
+/**
+ * Upsert multiple decks in a transaction
+ */
+export async function upsertDecks(inputs: CreateDeckInput[]): Promise<void> {
+  const db = await getDatabase();
+  const now = Date.now();
+
+  await db.withExclusiveTransactionAsync(async (txn) => {
+    for (const input of inputs) {
+      const id = input.id ?? generateId();
+      await txn.runAsync(UPSERT_DECK_SQL, [
+        id,
+        input.title,
+        input.description ?? null,
+        now,
+      ]);
+    }
+  });
+}
+
 function generateId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
