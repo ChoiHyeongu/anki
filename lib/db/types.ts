@@ -83,7 +83,7 @@ export interface DeckStats {
   totalCards: number;    // Total cards in deck
   youngCards: number;    // Cards with status 'review' and interval < 21 days
   matureCards: number;   // Cards with status 'review' and interval >= 21 days
-  nextDueDate: number | null; // Earliest due date for learning/relearning cards (future)
+  nextDueDate: number | null; // Earliest due date for any card (future)
 }
 
 /**

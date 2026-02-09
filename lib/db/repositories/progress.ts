@@ -234,13 +234,13 @@ export async function getDeckStats(
     [deckId]
   );
 
-  // Get next due date for learning/relearning cards (future only)
+  // Get next due date for any card type (future only)
   const nextDue = await db.getFirstAsync<{ due_date: number }>(
     `SELECT MIN(cp.due_date) as due_date
      FROM card_progress cp
      JOIN cards c ON cp.card_id = c.id
      WHERE c.deck_id = ?
-       AND cp.status IN ('learning', 'relearning')
+       AND cp.status IN ('learning', 'relearning', 'review')
        AND cp.due_date > ?`,
     [deckId, now]
   );

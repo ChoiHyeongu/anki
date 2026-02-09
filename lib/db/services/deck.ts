@@ -23,7 +23,7 @@ export interface DeckWithStats {
   youngCards: number; // review status with interval < 21 days
   matureCards: number; // review status with interval >= 21 days
   // Timing
-  nextDueDate: number | null; // earliest due date for learning cards
+  nextDueDate: number | null; // earliest due date for any card
   // Computed
   progress: number; // percentage of mature cards
   isCompleted: boolean;
