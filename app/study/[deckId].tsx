@@ -68,6 +68,7 @@ export default function StudyScreen() {
   };
 
   const handleRate = async (rating: Rating) => {
+    setIsRevealed(false);
     await submitRating(rating);
   };
 
