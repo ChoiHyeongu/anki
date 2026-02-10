@@ -43,8 +43,7 @@ export type StudySessionAction =
       rating: UIRating;
     }
   | { type: 'UNDO_SUCCESS'; cardId: string; restoredState: CardState }
-  | { type: 'SET_PREVIEWS'; previews: Record<UIRating, string> | null }
-  | { type: 'SET_CAN_UNDO'; canUndo: boolean };
+  | { type: 'SET_PREVIEWS'; previews: Record<UIRating, string> | null };
 
 export interface UseStudySessionOptions {
   deckId: string;

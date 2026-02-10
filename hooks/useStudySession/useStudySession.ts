@@ -150,6 +150,13 @@ function reducer(
           }
         : state.sessionStats.ratingCounts;
 
+      // Determine card category from restored state for accurate stat rollback
+      const wasNew = action.restoredState.status === 'new';
+      const wasLearning =
+        action.restoredState.status === 'learning' ||
+        action.restoredState.status === 'relearning';
+      const wasReview = action.restoredState.status === 'review';
+
       return {
         ...state,
         cards: updatedCards,
@@ -158,8 +165,16 @@ function reducer(
         lastReviewedCardId: null,
         lastRating: null,
         sessionStats: {
-          ...state.sessionStats,
           totalReviewed: Math.max(0, state.sessionStats.totalReviewed - 1),
+          newCardsLearned: wasNew
+            ? Math.max(0, state.sessionStats.newCardsLearned - 1)
+            : state.sessionStats.newCardsLearned,
+          learningCards: wasLearning
+            ? Math.max(0, state.sessionStats.learningCards - 1)
+            : state.sessionStats.learningCards,
+          reviewCards: wasReview
+            ? Math.max(0, state.sessionStats.reviewCards - 1)
+            : state.sessionStats.reviewCards,
           ratingCounts: updatedRatingCounts,
         },
       };
@@ -169,12 +184,6 @@ function reducer(
       return {
         ...state,
         intervalPreviews: action.previews,
-      };
-
-    case 'SET_CAN_UNDO':
-      return {
-        ...state,
-        canUndo: action.canUndo,
       };
 
     default:
@@ -217,6 +226,10 @@ function reducer(
  * ```
  */
 export function useStudySession(deckId: string): UseStudySessionReturn {
+  if (!deckId) {
+    console.warn('[useStudySession] deckId is empty');
+  }
+
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // Use ref to track latest state for callbacks (stale closure prevention)
@@ -312,36 +325,10 @@ export function useStudySession(deckId: string): UseStudySessionReturn {
     }
   }, []);
 
-  // Initial load
+  // Initial load - reuse loadQueue callback
   useEffect(() => {
-    let mounted = true;
-
-    async function load() {
-      dispatch({ type: 'LOAD_START' });
-
-      try {
-        const queue = await getStudyQueue(deckId);
-        if (mounted) {
-          const adaptedCards = queue.cards.map(adaptCardToUI);
-          dispatch({ type: 'LOAD_SUCCESS', cards: adaptedCards });
-        }
-      } catch (error) {
-        if (mounted) {
-          console.error('[useStudySession] Failed to load queue:', error);
-          dispatch({
-            type: 'LOAD_ERROR',
-            error: error instanceof Error ? error : new Error(String(error)),
-          });
-        }
-      }
-    }
-
-    load();
-
-    return () => {
-      mounted = false;
-    };
-  }, [deckId]);
+    loadQueue();
+  }, [loadQueue]);
 
   return {
     isLoading: state.isLoading,
