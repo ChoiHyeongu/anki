@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 
 import { ThemedText } from '@/components/themed-text';
 import { BorderRadius, Colors, FontFamily, RatingColors, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 import type { Rating, RatingButtonsProps } from './RatingButtons.type';
 

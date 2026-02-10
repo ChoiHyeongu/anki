@@ -2,12 +2,11 @@
  * useStudySession Hook
  * Manages study session state including card queue, ratings, and undo functionality
  */
-import { useState, useEffect, useCallback, useRef, useReducer } from 'react';
+import { useEffect, useCallback, useRef, useReducer } from 'react';
 import {
   getStudyQueue,
   submitRating as dbSubmitRating,
   undoRating as dbUndoRating,
-  canUndoRating,
 } from '@/lib/db';
 import { getIntervalPreviews } from '@/lib/srs';
 import {
@@ -16,68 +15,16 @@ import {
   adaptIntervalPreviewToUI,
   adaptStateToStats,
 } from '@/lib/adapters';
-import type { CardState } from '@/lib/srs';
-import type { AdaptedCard } from '@/lib/adapters';
 import type { Rating as UIRating } from '@/components/study/RatingButtons/RatingButtons.type';
-import type { IntervalPreview } from '@/lib/srs';
+
+import type {
+  StudySessionState,
+  StudySessionAction,
+  UseStudySessionReturn,
+} from './useStudySession.type';
 
 // ============================================
-// Types
-// ============================================
-
-interface RatingCounts {
-  again: number;
-  hard: number;
-  good: number;
-  easy: number;
-}
-
-interface SessionStats {
-  totalReviewed: number;
-  newCardsLearned: number;
-  learningCards: number;
-  reviewCards: number;
-  ratingCounts: RatingCounts;
-}
-
-interface StudySessionState {
-  cards: AdaptedCard[];
-  currentIndex: number;
-  isLoading: boolean;
-  error: Error | null;
-  canUndo: boolean;
-  lastReviewedCardId: string | null;
-  lastRating: UIRating | null;
-  sessionStats: SessionStats;
-  intervalPreviews: Record<UIRating, string> | null;
-}
-
-type StudySessionAction =
-  | { type: 'LOAD_START' }
-  | { type: 'LOAD_SUCCESS'; cards: AdaptedCard[] }
-  | { type: 'LOAD_ERROR'; error: Error }
-  | { type: 'RATE_CARD'; cardId: string; wasNew: boolean; wasLearning: boolean; wasReview: boolean; newState: CardState; rating: UIRating }
-  | { type: 'UNDO_SUCCESS'; cardId: string; restoredState: CardState }
-  | { type: 'SET_PREVIEWS'; previews: Record<UIRating, string> | null }
-  | { type: 'SET_CAN_UNDO'; canUndo: boolean };
-
-interface UseStudySessionReturn {
-  isLoading: boolean;
-  error: Error | null;
-  currentCard: AdaptedCard | null;
-  currentIndex: number;
-  totalCards: number;
-  isComplete: boolean;
-  canUndo: boolean;
-  intervalPreviews: Record<UIRating, string> | null;
-  sessionStats: SessionStats;
-  submitRating: (rating: UIRating) => Promise<void>;
-  undoRating: () => Promise<void>;
-  refresh: () => Promise<void>;
-}
-
-// ============================================
-// Reducer
+// Initial State
 // ============================================
 
 const initialState: StudySessionState = {
@@ -102,6 +49,10 @@ const initialState: StudySessionState = {
   },
   intervalPreviews: null,
 };
+
+// ============================================
+// Reducer
+// ============================================
 
 function reducer(
   state: StudySessionState,
@@ -279,7 +230,8 @@ export function useStudySession(deckId: string): UseStudySessionReturn {
     state.currentIndex < state.cards.length
       ? state.cards[state.currentIndex]
       : null;
-  const isComplete = !state.isLoading && state.currentIndex >= state.cards.length;
+  const isComplete =
+    !state.isLoading && state.currentIndex >= state.cards.length;
 
   // Load study queue
   const loadQueue = useCallback(async () => {

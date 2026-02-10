@@ -4,7 +4,7 @@ import Animated, { Easing, useAnimatedStyle, withTiming } from 'react-native-rea
 
 import { ThemedText } from '@/components/themed-text';
 import { BorderRadius, Colors, FontFamily, FontSize, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 import { CardStats } from '../CardStats';
 import { FlashcardBack } from '../FlashcardBack';

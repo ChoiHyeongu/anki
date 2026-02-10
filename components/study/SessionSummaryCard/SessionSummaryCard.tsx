@@ -9,7 +9,7 @@ import Animated, {
 import { ThemedText } from '@/components/themed-text';
 import { StatCard } from '@/components/ui/StatCard';
 import { BorderRadius, Colors, FontFamily, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 import type { SessionSummaryCardProps } from './SessionSummaryCard.type';
 

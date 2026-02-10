@@ -6,18 +6,8 @@ import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { getAllDecksWithStats } from '@/lib/db';
 import { adaptDecksToUI } from '@/lib/adapters';
-import type { Deck } from '@/components/deck/DeckList/DeckList.type';
 
-interface UseDecksState {
-  decks: Deck[];
-  isLoading: boolean;
-  error: Error | null;
-}
-
-interface UseDecksReturn extends UseDecksState {
-  /** Refresh the deck list */
-  refresh: () => Promise<void>;
-}
+import type { UseDecksState, UseDecksReturn } from './useDecks.type';
 
 /**
  * Hook to fetch and manage deck list with statistics

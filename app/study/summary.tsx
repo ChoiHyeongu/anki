@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Rating } from '@/components/study/RatingButtons/RatingButtons.type';
 import { ThemedText } from '@/components/themed-text';
 import { BorderRadius, Colors, FontFamily, RatingColors, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 

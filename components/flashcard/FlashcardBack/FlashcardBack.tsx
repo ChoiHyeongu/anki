@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Colors, FontFamily, FontSize, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 import type { FlashcardBackProps } from './FlashcardBack.type';
 

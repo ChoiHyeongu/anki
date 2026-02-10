@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 import type { ProgressBarProps, ProgressSegment } from './ProgressBar.type';
 

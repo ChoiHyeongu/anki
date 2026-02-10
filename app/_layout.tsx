@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { AnkiDarkTheme, AnkiLightTheme } from '@/constants/navigation-theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 import { DatabaseProvider } from '@/lib/db';
 
 // Prevent splash screen from auto-hiding until fonts are loaded

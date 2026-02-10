@@ -5,7 +5,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Colors, FontFamily, SRSColors, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 import type { DeckCardProps } from './DeckCard.type';
 

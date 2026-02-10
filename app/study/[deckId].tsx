@@ -8,8 +8,7 @@ import { RatingButtons, RevealButton, StudyHeader } from '@/components/study';
 import type { Rating } from '@/components/study/RatingButtons';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, FontFamily, Spacing } from '@/constants/theme';
-import { useStudySession } from '@/hooks';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme, useStudySession } from '@/hooks';
 
 export default function StudyScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();

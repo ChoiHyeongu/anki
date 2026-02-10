@@ -5,7 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { IconButton } from '@/components/ui/IconButton';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Colors, FontFamily, FontSize, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/hooks';
 
 import type { StudyHeaderProps } from './StudyHeader.type';
 

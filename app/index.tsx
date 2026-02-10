@@ -6,8 +6,7 @@ import { useCallback, useState } from 'react';
 import { DeckList } from '@/components/deck';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, FontFamily, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useDecks } from '@/hooks';
+import { useColorScheme, useDecks } from '@/hooks';
 
 export default function HomeScreen() {
   const router = useRouter();
