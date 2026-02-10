@@ -25,11 +25,19 @@ import type { IntervalPreview } from '@/lib/srs';
 // Types
 // ============================================
 
+interface RatingCounts {
+  again: number;
+  hard: number;
+  good: number;
+  easy: number;
+}
+
 interface SessionStats {
   totalReviewed: number;
   newCardsLearned: number;
   learningCards: number;
   reviewCards: number;
+  ratingCounts: RatingCounts;
 }
 
 interface StudySessionState {
@@ -39,6 +47,7 @@ interface StudySessionState {
   error: Error | null;
   canUndo: boolean;
   lastReviewedCardId: string | null;
+  lastRating: UIRating | null;
   sessionStats: SessionStats;
   intervalPreviews: Record<UIRating, string> | null;
 }
@@ -47,7 +56,7 @@ type StudySessionAction =
   | { type: 'LOAD_START' }
   | { type: 'LOAD_SUCCESS'; cards: AdaptedCard[] }
   | { type: 'LOAD_ERROR'; error: Error }
-  | { type: 'RATE_CARD'; cardId: string; wasNew: boolean; wasLearning: boolean; wasReview: boolean; newState: CardState }
+  | { type: 'RATE_CARD'; cardId: string; wasNew: boolean; wasLearning: boolean; wasReview: boolean; newState: CardState; rating: UIRating }
   | { type: 'UNDO_SUCCESS'; cardId: string; restoredState: CardState }
   | { type: 'SET_PREVIEWS'; previews: Record<UIRating, string> | null }
   | { type: 'SET_CAN_UNDO'; canUndo: boolean };
@@ -78,11 +87,18 @@ const initialState: StudySessionState = {
   error: null,
   canUndo: false,
   lastReviewedCardId: null,
+  lastRating: null,
   sessionStats: {
     totalReviewed: 0,
     newCardsLearned: 0,
     learningCards: 0,
     reviewCards: 0,
+    ratingCounts: {
+      again: 0,
+      hard: 0,
+      good: 0,
+      easy: 0,
+    },
   },
   intervalPreviews: null,
 };
@@ -104,11 +120,18 @@ function reducer(
         error: null,
         canUndo: false,
         lastReviewedCardId: null,
+        lastRating: null,
         sessionStats: {
           totalReviewed: 0,
           newCardsLearned: 0,
           learningCards: 0,
           reviewCards: 0,
+          ratingCounts: {
+            again: 0,
+            hard: 0,
+            good: 0,
+            easy: 0,
+          },
         },
       };
 
@@ -136,6 +159,7 @@ function reducer(
         currentIndex: state.currentIndex + 1,
         canUndo: true,
         lastReviewedCardId: action.cardId,
+        lastRating: action.rating,
         sessionStats: {
           totalReviewed: state.sessionStats.totalReviewed + 1,
           newCardsLearned:
@@ -144,6 +168,10 @@ function reducer(
             state.sessionStats.learningCards + (action.wasLearning ? 1 : 0),
           reviewCards:
             state.sessionStats.reviewCards + (action.wasReview ? 1 : 0),
+          ratingCounts: {
+            ...state.sessionStats.ratingCounts,
+            [action.rating]: state.sessionStats.ratingCounts[action.rating] + 1,
+          },
         },
         intervalPreviews: null,
       };
@@ -160,15 +188,28 @@ function reducer(
           : card
       );
 
+      // Decrement the rating count for the last rating
+      const updatedRatingCounts = state.lastRating
+        ? {
+            ...state.sessionStats.ratingCounts,
+            [state.lastRating]: Math.max(
+              0,
+              state.sessionStats.ratingCounts[state.lastRating] - 1
+            ),
+          }
+        : state.sessionStats.ratingCounts;
+
       return {
         ...state,
         cards: updatedCards,
         currentIndex: Math.max(0, state.currentIndex - 1),
         canUndo: false,
         lastReviewedCardId: null,
+        lastRating: null,
         sessionStats: {
           ...state.sessionStats,
           totalReviewed: Math.max(0, state.sessionStats.totalReviewed - 1),
+          ratingCounts: updatedRatingCounts,
         },
       };
     }
@@ -292,6 +333,7 @@ export function useStudySession(deckId: string): UseStudySessionReturn {
         wasLearning,
         wasReview,
         newState: result.newState,
+        rating,
       });
     } catch (error) {
       console.error('[useStudySession] Failed to submit rating:', error);

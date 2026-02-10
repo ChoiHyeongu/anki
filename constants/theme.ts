@@ -23,6 +23,14 @@ export const SRSColors = {
   mature: '#166534',   // Dark green - well-known cards (interval >= 21 days)
 } as const;
 
+// Rating Colors (for study session feedback)
+export const RatingColors = {
+  again: '#ef4444',    // Red - failed, needs immediate review
+  hard: '#f97316',     // Orange - difficult, shorter interval
+  good: '#22c55e',     // Green - correct, normal interval
+  easy: '#86efac',     // Light green - easy, longer interval
+} as const;
+
 // Zinc color scale for consistent grays
 const Zinc = {
   50: '#fafafa',
@@ -190,6 +198,7 @@ export const Fonts = Platform.select({
 // Type exports for type-safe color/token access
 export type ColorKey = keyof typeof Colors.light;
 export type SRSColorKey = keyof typeof SRSColors;
+export type RatingColorKey = keyof typeof RatingColors;
 export type SpacingKey = keyof typeof Spacing;
 export type BorderRadiusKey = keyof typeof BorderRadius;
 export type FontSizeKey = keyof typeof FontSize;

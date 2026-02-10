@@ -40,10 +40,10 @@ export default function StudyScreen() {
       router.replace({
         pathname: '/study/summary',
         params: {
-          totalReviewed: sessionStats.totalReviewed.toString(),
-          newCardsLearned: sessionStats.newCardsLearned.toString(),
-          reviewCards: sessionStats.reviewCards.toString(),
-          learningCards: sessionStats.learningCards.toString(),
+          againCount: sessionStats.ratingCounts.again.toString(),
+          hardCount: sessionStats.ratingCounts.hard.toString(),
+          goodCount: sessionStats.ratingCounts.good.toString(),
+          easyCount: sessionStats.ratingCounts.easy.toString(),
         },
       });
     }

@@ -3,16 +3,16 @@ import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
-import { BorderRadius, Colors, FontFamily, Spacing } from '@/constants/theme';
+import { BorderRadius, Colors, FontFamily, RatingColors, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import type { Rating, RatingButtonsProps } from './RatingButtons.type';
 
 const RATING_CONFIG: Record<Rating, { label: string; color: string }> = {
-  again: { label: '다시', color: '#ff5252' },
-  hard: { label: '어려움', color: '#ffa726' },
-  good: { label: '알맞음', color: '#13ec5b' },
-  easy: { label: '쉬움', color: '#42a5f5' },
+  again: { label: '다시', color: RatingColors.again },
+  hard: { label: '어려움', color: RatingColors.hard },
+  good: { label: '알맞음', color: RatingColors.good },
+  easy: { label: '쉬움', color: RatingColors.easy },
 };
 
 const RATINGS: Rating[] = ['again', 'hard', 'good', 'easy'];
